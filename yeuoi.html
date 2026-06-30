@@ -117,6 +117,10 @@
                 <span class="text-5xl block mb-2">🏰</span>
                 <h1 class="romantic-font text-2xl font-bold text-[#0369A1]">YÊU ƠI</h1>
                 <p class="text-xs text-slate-500 mt-1">Sở hữu một hộ chiếu mây xanh để cùng nhau ghi dấu kỷ niệm</p>
+                <!-- Database Mode Badge -->
+                <div class="mt-2">
+                    <span id="db-mode-badge" class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold">Kiểm tra kết nối...</span>
+                </div>
             </div>
 
             <!-- Auth Tabs Selector -->
@@ -251,10 +255,12 @@
                     </div>
                 </div>
                 <h2 class="romantic-font text-2xl font-bold text-[#0369A1]" id="couple-title">YÊU ƠI</h2>
-                <div class="mt-2 flex items-center justify-center gap-1.5">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mr-2">Đồng bộ đám mây</span>
-                    <button onclick="logoutCloud()" class="text-[9px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded transition">Đăng xuất</button>
+                <div class="mt-2 flex flex-col items-center justify-center gap-1.5">
+                    <div class="flex items-center gap-1">
+                        <span id="active-sync-dot" class="inline-block w-2 h-2 rounded-full animate-pulse"></span>
+                        <span id="active-sync-text" class="text-[9px] font-bold uppercase tracking-wider">Trạng thái đồng bộ</span>
+                    </div>
+                    <button onclick="logoutCloud()" class="text-[9px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded transition mt-1">Đăng xuất</button>
                 </div>
             </div>
 
@@ -484,7 +490,7 @@
         <span>☁️</span> <span id="toast-message">Thông điệp mây xanh!</span>
     </div>
 
-    <!-- FIREBASE AND CORE APP ENGINE (Strict Firebase rule enforcement) -->
+    <!-- FIREBASE AND CORE APP ENGINE (Strict Firebase rule enforcement + Device Mode Fallback) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -501,15 +507,83 @@
             appId: "1:1234567890:web:abcdef123456"
         };
 
-        // Initialize Firebase SDK Elements
+        // Automatically determine if we can connect to Firestore Cloud or use Local Device Mode
+        let useCloud = false;
         let app, db, auth;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } catch (e) {
-            console.error("Lỗi cấu hình Firebase. Sử dụng môi trường ảo hóa", e);
+        
+        if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                useCloud = true;
+            } catch (e) {
+                console.warn("Không kết nối được Firestore Cloud, chuyển sang Offline Mode.");
+            }
         }
+
+        // Offline / LocalStorage Database Wrapper
+        const localDB = {
+            getCollection(name) {
+                const data = localStorage.getItem(`love_db_${name}`);
+                return data ? JSON.parse(data) : [];
+            },
+            saveCollection(name, data) {
+                localStorage.setItem(`love_db_${name}`, JSON.stringify(data));
+                this.triggerListeners(name);
+            },
+            getItem(name, id) {
+                const col = this.getCollection(name);
+                return col.find(item => item.uid === id || item.id === id || item.coupleId === id || item.fromUid === id);
+            },
+            setItem(name, id, data) {
+                const col = this.getCollection(name);
+                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id);
+                if (index > -1) {
+                    col[index] = { ...col[index], ...data };
+                } else {
+                    col.push({ uid: id, id: id, ...data });
+                }
+                this.saveCollection(name, col);
+            },
+            addDoc(name, data) {
+                const col = this.getCollection(name);
+                const newDoc = { id: Math.random().toString(36).substr(2, 9), ...data };
+                col.push(newDoc);
+                this.saveCollection(name, col);
+                return newDoc;
+            },
+            updateDoc(name, id, data) {
+                const col = this.getCollection(name);
+                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id);
+                if (index > -1) {
+                    col[index] = { ...col[index], ...data };
+                    this.saveCollection(name, col);
+                }
+            },
+            deleteDoc(name, id) {
+                let col = this.getCollection(name);
+                col = col.filter(item => item.uid !== id && item.id !== id && item.coupleId !== id);
+                this.saveCollection(name, col);
+            },
+            // Simple mock realtime listener system
+            listeners: {},
+            onSnapshot(name, callback) {
+                if (!this.listeners[name]) this.listeners[name] = [];
+                this.listeners[name].push(callback);
+                
+                // Trigger immediate read on load
+                callback(this.getCollection(name));
+                return () => {
+                    this.listeners[name] = this.listeners[name].filter(cb => cb !== callback);
+                };
+            },
+            triggerListeners(name) {
+                if (this.listeners[name]) {
+                    this.listeners[name].forEach(cb => cb(this.getCollection(name)));
+                }
+            }
+        };
 
         // App States mapping
         let currentUserProfile = null; 
@@ -523,46 +597,76 @@
         let confirmDeleteSecretId = null; 
         let attachedImageBase64 = "";
 
-        // Authenticate User & Bind State Realtime Listener
+        // Authenticate User & Bind State Realtime Listener (Adaptive Cloud/Local)
         async function runCloudAuth() {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    // Check if they are logged in with anonymous credential (temporary for guest reads)
-                    if (user.isAnonymous) {
-                        // Keep them on the login/signup view
-                        document.getElementById("loading-screen").classList.add("hidden");
-                        document.getElementById("auth-screen").classList.remove("hidden");
-                        document.getElementById("app-content").classList.add("hidden");
-                        document.getElementById("matching-screen").classList.add("hidden");
+            // Display DB Mode Badge
+            const dbBadge = document.getElementById("db-mode-badge");
+            const activeDot = document.getElementById("active-sync-dot");
+            const activeText = document.getElementById("active-sync-text");
+
+            if (useCloud) {
+                dbBadge.textContent = "☁️ ĐỒNG BỘ ĐÁM MÂY (ONLINE)";
+                dbBadge.className = "inline-block bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-[10px] font-bold";
+                activeDot.className = "inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                activeText.textContent = "☁️ ĐỒNG BỘ ĐÁM MÂY";
+                activeText.className = "text-[9px] font-bold text-emerald-600 uppercase tracking-wider";
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        if (user.isAnonymous) {
+                            document.getElementById("loading-screen").classList.add("hidden");
+                            document.getElementById("auth-screen").classList.remove("hidden");
+                            document.getElementById("app-content").classList.add("hidden");
+                            document.getElementById("matching-screen").classList.add("hidden");
+                            return;
+                        }
+
+                        const userProfileRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                        try {
+                            const userSnap = await getDoc(userProfileRef);
+                            if (userSnap.exists()) {
+                                currentUserProfile = userSnap.data();
+                                document.getElementById("loading-screen").classList.add("hidden");
+                                document.getElementById("auth-screen").classList.add("hidden");
+                                runMainCloudSync(user.uid);
+                            } else {
+                                await signOut(auth);
+                            }
+                        } catch (err) {
+                            console.error("Lỗi tải thông tin:", err);
+                            showLoveToast("Không thể đồng bộ hồ sơ mây.");
+                        }
+                    } else {
+                        try {
+                            await signInAnonymously(auth);
+                        } catch (e) {
+                            console.error("Anonymous authentication failed", e);
+                        }
+                    }
+                });
+            } else {
+                // Offline LocalStorage Mode
+                dbBadge.textContent = "📱 LƯU TRỮ CỤC BỘ (OFFLINE)";
+                dbBadge.className = "inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-bold";
+                activeDot.className = "inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+                activeText.textContent = "📱 LƯU TRỮ THIẾT BỊ (OFFLINE)";
+                activeText.className = "text-[9px] font-bold text-amber-600 uppercase tracking-wider";
+
+                const cachedUid = localStorage.getItem('love_current_uid');
+                document.getElementById("loading-screen").classList.add("hidden");
+                
+                if (cachedUid) {
+                    currentUserProfile = localDB.getItem('users', cachedUid);
+                    if (currentUserProfile) {
+                        document.getElementById("auth-screen").classList.add("hidden");
+                        runMainCloudSync(cachedUid);
                         return;
                     }
-
-                    // Authentic user session is active! Try to load user profile (Strict Path - RULE 1)
-                    const userProfileRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-                    try {
-                        const userSnap = await getDoc(userProfileRef);
-                        if (userSnap.exists()) {
-                            currentUserProfile = userSnap.data();
-                            document.getElementById("loading-screen").classList.add("hidden");
-                            document.getElementById("auth-screen").classList.add("hidden");
-                            runMainCloudSync(user.uid);
-                        } else {
-                            // Auth account exists but profile document doesn't (Force safe log out to resolve sync)
-                            await signOut(auth);
-                        }
-                    } catch (err) {
-                        console.error("Lỗi tải thông tin:", err);
-                        showLoveToast("Không thể đồng bộ hồ sơ mây.");
-                    }
-                } else {
-                    // Force a silent anonymous login FIRST so firestore reads can be done safely (RULE 3 compliance)
-                    try {
-                        await signInAnonymously(auth);
-                    } catch (e) {
-                        console.error("Anonymous authentication failed", e);
-                    }
                 }
-            });
+                document.getElementById("auth-screen").classList.remove("hidden");
+                document.getElementById("app-content").classList.add("hidden");
+                document.getElementById("matching-screen").classList.add("hidden");
+            }
         }
 
         // Switch custom authorization panels
@@ -602,42 +706,67 @@
 
             const username = rawUsername.replace(/[^a-z0-9_]/g, ''); // safe username slug
 
-            try {
-                // RULE 2: Fetch user list securely to verify uniqueness in memory
-                const allUsersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
-                let exists = false;
-                allUsersSnap.forEach(uDoc => {
-                    if (uDoc.data().username === username) exists = true;
-                });
+            if (useCloud) {
+                try {
+                    const allUsersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+                    let exists = false;
+                    allUsersSnap.forEach(uDoc => {
+                        if (uDoc.data().username === username) exists = true;
+                    });
 
+                    if (exists) {
+                        showLoveToast("Biệt hiệu đã bị mây che mất (có người dùng rồi)! 🥺");
+                        return;
+                    }
+
+                    const emailCredential = `${username}@lovers.app`;
+                    const userCredential = await createUserWithEmailAndPassword(auth, emailCredential, password);
+                    const user = userCredential.user;
+
+                    const newProfile = {
+                        uid: user.uid,
+                        username: username,
+                        displayName: displayName,
+                        coupleId: null,
+                        partnerUid: null
+                    };
+
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid), newProfile);
+                    currentUserProfile = newProfile;
+                    
+                    showLoveToast("Cấp Hộ Chiếu thành công! 🎉 Chào mừng bạn.");
+                    document.getElementById("auth-screen").classList.add("hidden");
+                    runMainCloudSync(user.uid);
+                } catch (err) {
+                    console.error("Lỗi đăng ký:", err);
+                    showLoveToast("Đăng ký lỗi hoặc tài khoản đã tồn tại!");
+                }
+            } else {
+                // Local Mode register
+                const allUsers = localDB.getCollection('users');
+                const exists = allUsers.some(u => u.username === username);
                 if (exists) {
                     showLoveToast("Biệt hiệu đã bị mây che mất (có người dùng rồi)! 🥺");
                     return;
                 }
 
-                // Register authentic account on Firebase Auth
-                const emailCredential = `${username}@lovers.app`;
-                const userCredential = await createUserWithEmailAndPassword(auth, emailCredential, password);
-                const user = userCredential.user;
-
-                // Write Profile document to cloud database
+                const mockUid = "usr_" + Math.random().toString(36).substr(2, 9);
                 const newProfile = {
-                    uid: user.uid,
+                    uid: mockUid,
                     username: username,
                     displayName: displayName,
+                    password: password, // Store safely inside local storage
                     coupleId: null,
                     partnerUid: null
                 };
 
-                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid), newProfile);
+                localDB.setItem('users', mockUid, newProfile);
                 currentUserProfile = newProfile;
+                localStorage.setItem('love_current_uid', mockUid);
                 
-                showLoveToast("Cấp Hộ Chiếu thành công! 🎉 Chào mừng bạn.");
+                showLoveToast("Cấp Hộ Chiếu thiết bị thành công! 🎉");
                 document.getElementById("auth-screen").classList.add("hidden");
-                runMainCloudSync(user.uid);
-            } catch (err) {
-                console.error("Lỗi đăng ký:", err);
-                showLoveToast("Hệ thống mây bị nghẽn, thử lại sau ít phút nhé!");
+                runMainCloudSync(mockUid);
             }
         };
 
@@ -652,63 +781,108 @@
             }
 
             const username = rawUsername.replace(/[^a-z0-9_]/g, '');
-            const emailCredential = `${username}@lovers.app`;
 
-            try {
-                document.getElementById("loading-screen").classList.remove("hidden");
-                await signInWithEmailAndPassword(auth, emailCredential, password);
-            } catch (err) {
-                document.getElementById("loading-screen").classList.add("hidden");
-                console.error("Login failed", err);
-                showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
+            if (useCloud) {
+                const emailCredential = `${username}@lovers.app`;
+                try {
+                    document.getElementById("loading-screen").classList.remove("hidden");
+                    await signInWithEmailAndPassword(auth, emailCredential, password);
+                } catch (err) {
+                    document.getElementById("loading-screen").classList.add("hidden");
+                    console.error("Login failed", err);
+                    showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
+                }
+            } else {
+                // Local login validation
+                const allUsers = localDB.getCollection('users');
+                const matchedUser = allUsers.find(u => u.username === username && u.password === password);
+                
+                if (matchedUser) {
+                    currentUserProfile = matchedUser;
+                    localStorage.setItem('love_current_uid', matchedUser.uid);
+                    showLoveToast(`Chào mừng trở lại, ${matchedUser.displayName}! ✨`);
+                    document.getElementById("auth-screen").classList.add("hidden");
+                    runMainCloudSync(matchedUser.uid);
+                } else {
+                    showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
+                }
             }
         }
 
         // Safe Cloud Log Out
         window.logoutCloud = async function() {
-            try {
-                await signOut(auth);
-                // Clear active states
-                currentUserProfile = null;
-                currentCoupleDoc = null;
-                diaryEntries = [];
-                secretEntries = [];
-                bucketList = [];
-                unlockedSecretIds = [];
-                showLoveToast("Đã bước ra khỏi lâu đài mây xanh! Hẹn gặp lại. ☁️");
-            } catch (err) {
-                console.error(err);
+            if (useCloud) {
+                try {
+                    await signOut(auth);
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localStorage.removeItem('love_current_uid');
             }
+            
+            // Clear active states
+            currentUserProfile = null;
+            currentCoupleDoc = null;
+            diaryEntries = [];
+            secretEntries = [];
+            bucketList = [];
+            unlockedSecretIds = [];
+            
+            document.getElementById("app-content").classList.add("hidden");
+            document.getElementById("matching-screen").classList.add("hidden");
+            document.getElementById("auth-screen").classList.remove("hidden");
+            showLoveToast("Đã đăng xuất khỏi lâu đài mây xanh! Hẹn gặp lại. ☁️");
         }
 
         // Main Cloud Sync Orchestrator
         function runMainCloudSync(uid) {
-            // 1. Listen to Current User profile changes
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), (profileDoc) => {
-                if (profileDoc.exists()) {
-                    currentUserProfile = profileDoc.data();
-                    document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
-                    
-                    if (currentUserProfile.coupleId) {
-                        // User is in a couple! Deactivate match mode, open App Content
-                        document.getElementById("matching-screen").classList.add("hidden");
-                        document.getElementById("app-content").classList.remove("hidden");
+            if (useCloud) {
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), (profileDoc) => {
+                    if (profileDoc.exists()) {
+                        currentUserProfile = profileDoc.data();
+                        document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
                         
-                        // Author presets
-                        document.getElementById("diary-author").value = currentUserProfile.displayName;
-                        document.getElementById("secret-author").value = currentUserProfile.displayName;
+                        if (currentUserProfile.coupleId) {
+                            document.getElementById("matching-screen").classList.add("hidden");
+                            document.getElementById("app-content").classList.remove("hidden");
+                            
+                            document.getElementById("diary-author").value = currentUserProfile.displayName;
+                            document.getElementById("secret-author").value = currentUserProfile.displayName;
 
-                        syncCoupleSharedData(currentUserProfile.coupleId);
-                    } else {
-                        // Single status. Show Matching Sảnh
-                        document.getElementById("app-content").classList.add("hidden");
-                        document.getElementById("matching-screen").classList.remove("hidden");
-                        syncMatchmakingHallData();
+                            syncCoupleSharedData(currentUserProfile.coupleId);
+                        } else {
+                            document.getElementById("app-content").classList.add("hidden");
+                            document.getElementById("matching-screen").classList.remove("hidden");
+                            syncMatchmakingHallData();
+                        }
                     }
-                }
-            }, (err) => {
-                console.error("User sync error", err);
-            });
+                }, (err) => console.error("User sync error", err));
+            } else {
+                // Local Mode live simulation loop
+                setInterval(() => {
+                    if (!currentUserProfile) return;
+                    const freshProfile = localDB.getItem('users', currentUserProfile.uid);
+                    if (freshProfile) {
+                        currentUserProfile = freshProfile;
+                        document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
+                        
+                        if (currentUserProfile.coupleId) {
+                            document.getElementById("matching-screen").classList.add("hidden");
+                            document.getElementById("app-content").classList.remove("hidden");
+                            
+                            document.getElementById("diary-author").value = currentUserProfile.displayName;
+                            document.getElementById("secret-author").value = currentUserProfile.displayName;
+
+                            syncCoupleSharedData(currentUserProfile.coupleId);
+                        } else {
+                            document.getElementById("app-content").classList.add("hidden");
+                            document.getElementById("matching-screen").classList.remove("hidden");
+                            syncMatchmakingHallData();
+                        }
+                    }
+                }, 1000);
+            }
         }
 
         // Search Partner by `@username`
@@ -716,16 +890,34 @@
             const searchVal = document.getElementById("search-username-input").value.trim().toLowerCase();
             if (!searchVal) return;
 
-            try {
-                const usersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
-                let foundUser = null;
-                usersSnap.forEach(uDoc => {
-                    const ud = uDoc.data();
-                    if (ud.username === searchVal && ud.uid !== auth.currentUser.uid) {
-                        foundUser = ud;
-                    }
-                });
+            if (useCloud) {
+                try {
+                    const usersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+                    let foundUser = null;
+                    usersSnap.forEach(uDoc => {
+                        const ud = uDoc.data();
+                        if (ud.username === searchVal && ud.uid !== auth.currentUser.uid) {
+                            foundUser = ud;
+                        }
+                    });
 
+                    if (foundUser) {
+                        document.getElementById("found-display-name").textContent = foundUser.displayName;
+                        document.getElementById("found-username").textContent = `@${foundUser.username}`;
+                        document.getElementById("found-username").dataset.uid = foundUser.uid;
+                        document.getElementById("search-results-area").classList.remove("hidden");
+                    } else {
+                        showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
+                        document.getElementById("search-results-area").classList.add("hidden");
+                    }
+                } catch (err) {
+                    console.error("Lỗi tìm kiếm", err);
+                }
+            } else {
+                // Local search simulation
+                const allUsers = localDB.getCollection('users');
+                const foundUser = allUsers.find(u => u.username === searchVal && u.uid !== currentUserProfile.uid);
+                
                 if (foundUser) {
                     document.getElementById("found-display-name").textContent = foundUser.displayName;
                     document.getElementById("found-username").textContent = `@${foundUser.username}`;
@@ -735,8 +927,6 @@
                     showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
                     document.getElementById("search-results-area").classList.add("hidden");
                 }
-            } catch (err) {
-                console.error("Lỗi tìm kiếm", err);
             }
         };
 
@@ -746,70 +936,97 @@
             const targetUsername = document.getElementById("found-username").textContent.replace('@', '');
             const targetDisplayName = document.getElementById("found-display-name").textContent;
 
-            try {
-                // Add document to public collection coupleRequests (Strict Path Rule 1)
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), {
-                    fromUid: auth.currentUser.uid,
-                    fromUsername: currentUserProfile.username,
-                    fromDisplayName: currentUserProfile.displayName,
-                    toUid: targetUid,
-                    toUsername: targetUsername,
-                    status: 'pending'
-                });
+            const requestData = {
+                fromUid: useCloud ? auth.currentUser.uid : currentUserProfile.uid,
+                fromUsername: currentUserProfile.username,
+                fromDisplayName: currentUserProfile.displayName,
+                toUid: targetUid,
+                toUsername: targetUsername,
+                status: 'pending'
+            };
 
+            if (useCloud) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), requestData);
+                    showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
+                    document.getElementById("search-results-area").classList.add("hidden");
+                    document.getElementById("search-username-input").value = "";
+                } catch (err) {
+                    console.error("Gửi yêu cầu thất bại", err);
+                }
+            } else {
+                localDB.addDoc('coupleRequests', requestData);
                 showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
                 document.getElementById("search-results-area").classList.add("hidden");
                 document.getElementById("search-username-input").value = "";
-            } catch (err) {
-                console.error("Gửi yêu cầu thất bại", err);
             }
         };
 
         // Sync Matchmaking requests real-time
         function syncMatchmakingHallData() {
-            // Listen to all requests, filter in client side memory safely (RULE 2 compliance)
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), (requestsSnap) => {
-                let sentMatch = null;
-                let receivedMatch = null;
+            if (useCloud) {
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), (requestsSnap) => {
+                    let sentMatch = null;
+                    let receivedMatch = null;
 
-                requestsSnap.forEach(rDoc => {
-                    const rData = rDoc.data();
-                    rData.id = rDoc.id;
+                    requestsSnap.forEach(rDoc => {
+                        const rData = rDoc.data();
+                        rData.id = rDoc.id;
 
-                    if (rData.status === 'pending') {
-                        if (rData.fromUid === auth.currentUser.uid) {
-                            sentMatch = rData;
+                        if (rData.status === 'pending') {
+                            if (rData.fromUid === auth.currentUser.uid) {
+                                sentMatch = rData;
+                            }
+                            if (rData.toUid === auth.currentUser.uid) {
+                                receivedMatch = rData;
+                            }
                         }
-                        if (rData.toUid === auth.currentUser.uid) {
-                            receivedMatch = rData;
+                    });
+
+                    renderMatchRequests(sentMatch, receivedMatch);
+                }, (err) => console.error("Match sync error", err));
+            } else {
+                // Local Mode Matchmaking Sync
+                localDB.onSnapshot('coupleRequests', (col) => {
+                    let sentMatch = null;
+                    let receivedMatch = null;
+
+                    col.forEach(rData => {
+                        if (rData.status === 'pending') {
+                            if (rData.fromUid === currentUserProfile.uid) {
+                                sentMatch = rData;
+                            }
+                            if (rData.toUid === currentUserProfile.uid) {
+                                receivedMatch = rData;
+                            }
                         }
-                    }
+                    });
+
+                    renderMatchRequests(sentMatch, receivedMatch);
                 });
+            }
+        }
 
-                // Render Sent request status
-                const sentArea = document.getElementById("sent-requests-area");
-                if (sentMatch) {
-                    document.getElementById("sent-request-partner").textContent = `@${sentMatch.toUsername}`;
-                    sentArea.classList.remove("hidden");
-                } else {
-                    sentArea.classList.add("hidden");
-                }
+        function renderMatchRequests(sentMatch, receivedMatch) {
+            const sentArea = document.getElementById("sent-requests-area");
+            if (sentMatch) {
+                document.getElementById("sent-request-partner").textContent = `@${sentMatch.toUsername}`;
+                sentArea.classList.remove("hidden");
+            } else {
+                sentArea.classList.add("hidden");
+            }
 
-                // Render Incoming request status
-                const incomingArea = document.getElementById("incoming-requests-area");
-                if (receivedMatch) {
-                    document.getElementById("incoming-sender-name").textContent = `${receivedMatch.fromDisplayName} (@${receivedMatch.fromUsername})`;
-                    incomingArea.dataset.reqId = receivedMatch.id;
-                    incomingArea.dataset.fromUid = receivedMatch.fromUid;
-                    incomingArea.dataset.fromUsername = receivedMatch.fromUsername;
-                    incomingArea.dataset.fromDisplayName = receivedMatch.fromDisplayName;
-                    incomingArea.classList.remove("hidden");
-                } else {
-                    incomingArea.classList.add("hidden");
-                }
-            }, (err) => {
-                console.error("Match sync error", err);
-            });
+            const incomingArea = document.getElementById("incoming-requests-area");
+            if (receivedMatch) {
+                document.getElementById("incoming-sender-name").textContent = `${receivedMatch.fromDisplayName} (@${receivedMatch.fromUsername})`;
+                incomingArea.dataset.reqId = receivedMatch.id;
+                incomingArea.dataset.fromUid = receivedMatch.fromUid;
+                incomingArea.dataset.fromUsername = receivedMatch.fromUsername;
+                incomingArea.dataset.fromDisplayName = receivedMatch.fromDisplayName;
+                incomingArea.classList.remove("hidden");
+            } else {
+                incomingArea.classList.add("hidden");
+            }
         }
 
         // Accept or Reject Request
@@ -819,116 +1036,180 @@
             const partnerUid = incomingArea.dataset.fromUid;
             const partnerUsername = incomingArea.dataset.fromUsername;
             const partnerDisplayName = incomingArea.dataset.fromDisplayName;
+            const myUid = useCloud ? auth.currentUser.uid : currentUserProfile.uid;
 
-            try {
+            if (useCloud) {
+                try {
+                    if (isAccepted) {
+                        const coupleId = `couple_${partnerUid}_${myUid}`;
+
+                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), {
+                            coupleId: coupleId,
+                            partner1Uid: partnerUid,
+                            partner1Username: partnerUsername,
+                            partner1DisplayName: partnerDisplayName,
+                            partner2Uid: myUid,
+                            partner2Username: currentUserProfile.username,
+                            partner2DisplayName: currentUserProfile.displayName,
+                            anniversaryDate: "2026-01-01"
+                        });
+
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', myUid), {
+                            coupleId: coupleId,
+                            partnerUid: partnerUid
+                        });
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', partnerUid), {
+                            coupleId: coupleId,
+                            partnerUid: myUid
+                        });
+
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId), {
+                            status: 'accepted'
+                        });
+
+                        showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
+                    } else {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId));
+                        showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
+                    }
+                } catch (err) {
+                    console.error("Lỗi kết đôi", err);
+                }
+            } else {
+                // Local storage partner respond logic
                 if (isAccepted) {
-                    const coupleId = `couple_${partnerUid}_${auth.currentUser.uid}`;
-
-                    // 1. Create Couple Document
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), {
+                    const coupleId = `couple_${partnerUid}_${myUid}`;
+                    const coupleData = {
                         coupleId: coupleId,
                         partner1Uid: partnerUid,
                         partner1Username: partnerUsername,
                         partner1DisplayName: partnerDisplayName,
-                        partner2Uid: auth.currentUser.uid,
+                        partner2Uid: myUid,
                         partner2Username: currentUserProfile.username,
                         partner2DisplayName: currentUserProfile.displayName,
                         anniversaryDate: "2026-01-01"
-                    });
+                    };
 
-                    // 2. Update user profiles to point to Couple
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', auth.currentUser.uid), {
-                        coupleId: coupleId,
-                        partnerUid: partnerUid
-                    });
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', partnerUid), {
-                        coupleId: coupleId,
-                        partnerUid: auth.currentUser.uid
-                    });
-
-                    // 3. Update Request document
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId), {
-                        status: 'accepted'
-                    });
-
+                    localDB.setItem('couples', coupleId, coupleData);
+                    
+                    // Update user profiles
+                    localDB.updateDoc('users', myUid, { coupleId: coupleId, partnerUid: partnerUid });
+                    localDB.updateDoc('users', partnerUid, { coupleId: coupleId, partnerUid: myUid });
+                    
+                    localDB.updateDoc('coupleRequests', reqId, { status: 'accepted' });
                     showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
                 } else {
-                    // Rejected: Delete proposal
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId));
+                    localDB.deleteDoc('coupleRequests', reqId);
                     showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
                 }
-            } catch (err) {
-                console.error("Lỗi kết đôi", err);
             }
         };
 
         // Sync diary entries, secrets and wishlist belonging to Couple Spaces
         function syncCoupleSharedData(coupleId) {
-            // Listen to Couple Info Document
-            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), (cDoc) => {
-                if (cDoc.exists()) {
-                    currentCoupleDoc = cDoc.data();
+            if (useCloud) {
+                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), (cDoc) => {
+                    if (cDoc.exists()) {
+                        currentCoupleDoc = cDoc.data();
+                        anniversaryDate = currentCoupleDoc.anniversaryDate;
+                        document.getElementById("anniversary-input").value = anniversaryDate;
+
+                        document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
+                        document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
+                        document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
+                    }
+                }, (err) => console.error("Couple Sync Error", err));
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), (snapshot) => {
+                    const entries = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data.coupleId === coupleId) {
+                            data.id = docSnap.id;
+                            entries.push(data);
+                        }
+                    });
+                    diaryEntries = entries.sort((a,b) => b.id - a.id);
+                    renderTimeline();
+                }, (err) => console.error("Diary sync error", err));
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), (snapshot) => {
+                    const secrets = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data.coupleId === coupleId) {
+                            data.id = docSnap.id;
+                            secrets.push(data);
+                        }
+                    });
+                    secretEntries = secrets.sort((a,b) => b.id - a.id);
+                    renderSecrets();
+                }, (err) => console.error("Secrets sync error", err));
+
+                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), (snapshot) => {
+                    const list = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data.coupleId === coupleId) {
+                            data.id = docSnap.id;
+                            list.push(data);
+                        }
+                    });
+                    bucketList = list;
+                    renderBucketList();
+                }, (err) => console.error("Bucketlist sync error", err));
+            } else {
+                // Local Mode live listeners simulation
+                const cDoc = localDB.getItem('couples', coupleId);
+                if (cDoc) {
+                    currentCoupleDoc = cDoc;
                     anniversaryDate = currentCoupleDoc.anniversaryDate;
                     document.getElementById("anniversary-input").value = anniversaryDate;
 
-                    // Header UI adjustments
                     document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
                     document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
                     document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
                 }
-            }, (err) => console.error("Couple Sync Error", err));
 
-            // Sync Diary Timeline with Client-Side Filter (RULE 2 Compliance)
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), (snapshot) => {
-                const entries = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.coupleId === coupleId) {
-                        data.id = docSnap.id;
-                        entries.push(data);
-                    }
+                localDB.onSnapshot('diary', (col) => {
+                    const entries = [];
+                    col.forEach(data => {
+                        if (data.coupleId === coupleId) {
+                            entries.push(data);
+                        }
+                    });
+                    diaryEntries = entries.sort((a,b) => b.id - a.id);
+                    renderTimeline();
                 });
-                // Sort by date or id descending
-                diaryEntries = entries.sort((a,b) => b.id - a.id);
-                renderTimeline();
-            }, (err) => console.error("Diary sync error", err));
 
-            // Sync Secrets List with Client-Side Filter
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), (snapshot) => {
-                const secrets = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.coupleId === coupleId) {
-                        data.id = docSnap.id;
-                        secrets.push(data);
-                    }
+                localDB.onSnapshot('secrets', (col) => {
+                    const secrets = [];
+                    col.forEach(data => {
+                        if (data.coupleId === coupleId) {
+                            secrets.push(data);
+                        }
+                    });
+                    secretEntries = secrets.sort((a,b) => b.id - a.id);
+                    renderSecrets();
                 });
-                secretEntries = secrets.sort((a,b) => b.id - a.id);
-                renderSecrets();
-            }, (err) => console.error("Secrets sync error", err));
 
-            // Sync Bucket list with Client-Side Filter
-            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), (snapshot) => {
-                const list = [];
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.coupleId === coupleId) {
-                        data.id = docSnap.id;
-                        list.push(data);
-                    }
+                localDB.onSnapshot('bucketList', (col) => {
+                    const list = [];
+                    col.forEach(data => {
+                        if (data.coupleId === coupleId) {
+                            list.push(data);
+                        }
+                    });
+                    bucketList = list;
+                    renderBucketList();
                 });
-                bucketList = list;
-                renderBucketList();
-            }, (err) => console.error("Bucketlist sync error", err));
+            }
         }
 
         // Global initialization
         window.onload = function() {
             createCloudsBackground();
-            // Start Authentication Check
             runCloudAuth();
-
-            // Interval for Live Love Clock
             setInterval(updateLoveCounter, 1000);
         };
 
@@ -948,21 +1229,17 @@
         // Switch custom tabs
         window.switchTab = function(tabId) {
             activeTabId = tabId;
-            // Hide all sections
             document.getElementById("sec-diary").classList.add("hidden");
             document.getElementById("sec-secrets").classList.add("hidden");
             document.getElementById("sec-bucket").classList.add("hidden");
 
-            // Show active section
             if (tabId === 'diary') document.getElementById("sec-diary").classList.remove("hidden");
             if (tabId === 'secrets') document.getElementById("sec-secrets").classList.remove("hidden");
             if (tabId === 'bucket') document.getElementById("sec-bucket").classList.remove("hidden");
 
-            // Manage desktop buttons style
             document.querySelectorAll("aside nav button").forEach(btn => btn.classList.remove("active-tab"));
             document.getElementById(`d-btn-${tabId}`).classList.add("active-tab");
 
-            // Manage mobile buttons style
             document.querySelectorAll("nav.md\\:hidden button").forEach(btn => {
                 btn.classList.remove("text-sky-500", "active-tab");
                 btn.classList.add("text-slate-500");
@@ -1004,13 +1281,18 @@
         window.updateAnniversary = async function() {
             const inputVal = document.getElementById("anniversary-input").value;
             if (inputVal && currentUserProfile.coupleId) {
-                try {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', currentUserProfile.coupleId), {
-                        anniversaryDate: inputVal
-                    });
-                    showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ lên mây! 🌤️");
-                } catch (e) {
-                    console.error(e);
+                if (useCloud) {
+                    try {
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', currentUserProfile.coupleId), {
+                            anniversaryDate: inputVal
+                        });
+                        showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ lên mây! 🌤️");
+                    } catch (e) {
+                        console.error(e);
+                    }
+                } else {
+                    localDB.updateDoc('couples', currentUserProfile.coupleId, { anniversaryDate: inputVal });
+                    showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ! 🌤️");
                 }
             }
         }
@@ -1045,36 +1327,48 @@
             const content = document.getElementById("diary-content").value.trim();
             const today = new Date().toISOString().split('T')[0];
 
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), {
-                    coupleId: currentUserProfile.coupleId,
-                    id: Date.now(), // Unique timeline key
-                    author: currentUserProfile.displayName,
-                    date: today,
-                    mood: mood,
-                    title: title,
-                    content: content,
-                    image: attachedImageBase64
-                });
+            const entryData = {
+                coupleId: currentUserProfile.coupleId,
+                id: Date.now(), // Unique timeline key
+                author: currentUserProfile.displayName,
+                date: today,
+                mood: mood,
+                title: title,
+                content: content,
+                image: attachedImageBase64
+            };
 
-                // Reset forms
-                document.getElementById("diary-title").value = "";
-                document.getElementById("diary-content").value = "";
-                clearImagePreview();
-                showLoveToast("Nhật ký đã gửi trọn lên mây trời bình yên! 💌");
-            } catch (err) {
-                console.error(err);
+            if (useCloud) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), entryData);
+                    showLoveToast("Nhật ký đã gửi trọn lên mây trời bình yên! 💌");
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localDB.addDoc('diary', entryData);
+                showLoveToast("Nhật ký đã lưu thành công! 💌");
             }
+
+            // Reset forms
+            document.getElementById("diary-title").value = "";
+            document.getElementById("diary-content").value = "";
+            clearImagePreview();
         }
 
         // Delete memory card from timeline
         window.deleteEntry = async function(docId) {
             if (confirm("Hai bạn có chắc chắn muốn xóa kỷ niệm này không? 🥺")) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'diary', docId));
+                if (useCloud) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'diary', docId));
+                        showLoveToast("Đã xóa vĩnh viễn một trang nhật ký cũ.");
+                    } catch (e) {
+                        console.error(e);
+                    }
+                } else {
+                    localDB.deleteDoc('diary', docId);
                     showLoveToast("Đã xóa vĩnh viễn một trang nhật ký cũ.");
-                } catch (e) {
-                    console.error(e);
                 }
             }
         }
@@ -1089,32 +1383,38 @@
             const content = document.getElementById("secret-content").value.trim();
             const today = new Date().toISOString().split('T')[0];
 
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), {
-                    coupleId: currentUserProfile.coupleId,
-                    id: Date.now(),
-                    author: currentUserProfile.displayName,
-                    date: today,
-                    title: title,
-                    content: content,
-                    password: password
-                });
+            const secretData = {
+                coupleId: currentUserProfile.coupleId,
+                id: Date.now(),
+                author: currentUserProfile.displayName,
+                date: today,
+                title: title,
+                content: content,
+                password: password
+            };
 
-                // Reset form input values
-                document.getElementById("secret-password").value = "";
-                document.getElementById("secret-title").value = "";
-                document.getElementById("secret-content").value = "";
-
-                showLoveToast("Bí mật đã được gửi trọn vào rương mây bảo mật! 🔒✨");
-            } catch (err) {
-                console.error(err);
+            if (useCloud) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), secretData);
+                    showLoveToast("Bí mật đã được gửi trọn vào rương mây bảo mật! 🔒✨");
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localDB.addDoc('secrets', secretData);
+                showLoveToast("Bí mật đã được gửi trọn vào rương bảo mật! 🔒✨");
             }
+
+            // Reset form input values
+            document.getElementById("secret-password").value = "";
+            document.getElementById("secret-title").value = "";
+            document.getElementById("secret-content").value = "";
         }
 
         // Handle secret password confirmation
         window.checkSecretPassword = function(id, inputElementId) {
             const entered = document.getElementById(inputElementId).value.trim();
-            const secret = secretEntries.find(s => s.id === id);
+            const secret = secretEntries.find(s => s.id == id || s.id === id);
             
             if (secret && secret.password === entered) {
                 unlockedSecretIds.push(id);
@@ -1134,12 +1434,18 @@
 
         // Complete deletion of the secret card
         window.deleteSecret = async function(docId) {
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'secrets', docId));
+            if (useCloud) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'secrets', docId));
+                    confirmDeleteSecretId = null;
+                    showLoveToast("Bí mật đã được xóa sạch hoàn toàn khỏi rương mây.");
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localDB.deleteDoc('secrets', docId);
                 confirmDeleteSecretId = null;
-                showLoveToast("Bí mật đã được xóa sạch hoàn toàn khỏi rương mây.");
-            } catch (err) {
-                console.error(err);
+                showLoveToast("Bí mật đã được xóa sạch hoàn toàn.");
             }
         }
 
@@ -1189,7 +1495,7 @@
                             <div class="flex gap-2 max-w-xs w-full mt-1">
                                 <input type="password" id="${inputId}" placeholder="Nhập mã giải khóa..." 
                                     class="flex-1 px-3 py-2 border border-sky-200 rounded-xl text-xs text-center focus:outline-none focus:border-sky-400 bg-white">
-                                <button onclick="checkSecretPassword(${secret.id}, '${inputId}')"
+                                <button onclick="checkSecretPassword('${secret.id}', '${inputId}')"
                                     class="bg-[#0369A1] hover:bg-[#025684] text-white px-4 py-2 rounded-xl text-xs font-bold transition">
                                     Giải Mã 🗝️
                                 </button>
@@ -1198,7 +1504,6 @@
                     `;
                 }
 
-                // Delete system block with inline confirm (avoiding native dialogs)
                 let deleteBlockHtml = "";
                 if (confirmDeleteSecretId === secret.id) {
                     deleteBlockHtml = `
@@ -1210,7 +1515,7 @@
                     `;
                 } else {
                     deleteBlockHtml = `
-                        <button onclick="toggleDeleteSecretConfirm(${secret.id})"
+                        <button onclick="toggleDeleteSecretConfirm('${secret.id}')"
                             class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
                             Xóa 🗑️
                         </button>
@@ -1262,7 +1567,6 @@
                 const entryCard = document.createElement("div");
                 entryCard.className = "love-card p-6 md:p-8 space-y-4 relative group";
                 
-                // Author badge colors
                 const authorColorClass = entry.author === currentUserProfile.displayName
                     ? "bg-blue-100 text-blue-700" 
                     : "bg-sky-100 text-[#0369A1]";
@@ -1289,7 +1593,6 @@
                         ${imageHtml}
                     </div>
 
-                    <!-- Delete button visible on hover -->
                     <button onclick="deleteEntry('${entry.id}')"
                         class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
                         Xóa 🗑️
@@ -1308,36 +1611,52 @@
             const text = input.value.trim();
 
             if (text) {
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), {
-                        coupleId: currentUserProfile.coupleId,
-                        text: text,
-                        completed: false
-                    });
-                    input.value = "";
-                    showLoveToast("Đã bổ sung một ước nguyện mới bay lên trời xanh! ✨");
-                } catch (e) {
-                    console.error(e);
+                const wishData = {
+                    coupleId: currentUserProfile.coupleId,
+                    text: text,
+                    completed: false
+                };
+
+                if (useCloud) {
+                    try {
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), wishData);
+                        showLoveToast("Đã bổ sung một ước nguyện mới bay lên trời xanh! ✨");
+                    } catch (e) {
+                        console.error(e);
+                    }
+                } else {
+                    localDB.addDoc('bucketList', wishData);
+                    showLoveToast("Đã bổ sung một ước nguyện mới! ✨");
                 }
+                input.value = "";
             }
         }
 
         window.toggleWishlist = async function(docId, currentCompleted) {
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId), {
-                    completed: !currentCompleted
-                });
-                showLoveToast("Ước nguyện ngọt ngào đã được hòa vào gió mây! 🌤️");
-            } catch (err) {
-                console.error(err);
+            if (useCloud) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId), {
+                        completed: !currentCompleted
+                    });
+                    showLoveToast("Ước nguyện ngọt ngào đã được hòa vào gió mây! 🌤️");
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localDB.updateDoc('bucketList', docId, { completed: !currentCompleted });
+                showLoveToast("Ước nguyện đã được cập nhật! 🌤️");
             }
         }
 
         window.deleteWishlistItem = async function(docId) {
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId));
-            } catch (err) {
-                console.error(err);
+            if (useCloud) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId));
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                localDB.deleteDoc('bucketList', docId);
             }
         }
 
@@ -1372,7 +1691,6 @@
                 container.appendChild(row);
             });
 
-            // Calculate progress percentage
             const percentage = Math.round((completedCount / bucketList.length) * 100);
             updateBucketProgress(percentage);
         }
@@ -1387,7 +1705,6 @@
             const container = document.getElementById("clouds-container");
             const cloudSymbols = ["☁️", "☁️", "🌤️", "✨", "⭐", "💨"];
             
-            // Generate initial clouds spread across the viewport
             for (let i = 0; i < 12; i++) {
                 setTimeout(() => {
                     const cloud = document.createElement("div");
@@ -1398,9 +1715,8 @@
                     cloud.style.fontSize = Math.random() * 2 + 1.5 + "rem";
                     cloud.style.animationDuration = Math.random() * 15 + 20 + "s";
                     cloud.style.animationDelay = Math.random() * 3 + "s";
-                    container.appendChild(cloud);
+                    if (container) container.appendChild(cloud);
 
-                    // Re-instantiate when animation ends
                     cloud.addEventListener("animationend", () => {
                         cloud.remove();
                         createSingleCloud();
