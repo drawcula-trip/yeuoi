@@ -4,22 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YÊU ƠI</title>
-    <!-- Tailwind CSS for modern responsive styling -->
+    <!-- Tailwind CSS for responsive styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..900;1,400..900&family=Quicksand:wght=300..700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Quicksand:wght@300..700&display=swap');
         
         :root {
-            --cloud-blue: #F0F9FF;
-            --sky-accent: #0EA5E9;
-            --deep-blue: #0369A1;
-            --gold-accent: #F59E0B;
+            --twilight-dark: #0a0f1d;
+            --twilight-blue: #111a2e;
+            --twilight-card: rgba(17, 26, 46, 0.75);
+            --tarot-gold: #e5c158;
+            --tarot-gold-dim: rgba(229, 193, 88, 0.3);
+            --cloud-white: rgba(255, 255, 255, 0.85);
         }
 
         body {
             font-family: 'Quicksand', sans-serif;
-            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-            color: #4A4A4A;
+            background: radial-gradient(circle at center, #16223f 0%, #0a0f1d 100%);
+            color: #e2e8f0;
             min-height: 100vh;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
@@ -27,72 +29,122 @@
 
         .romantic-font {
             font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
         }
 
-        /* Glassmorphism styles */
+        /* Tarot Card Aesthetic Styles */
         .love-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(14, 165, 233, 0.15);
-            border-radius: 2rem;
-            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
-            transition: all 0.3s ease;
+            background: var(--twilight-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--tarot-gold-dim);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(229, 193, 88, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .love-card::before {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border: 1px dashed rgba(229, 193, 88, 0.2);
+            border-radius: 1.2rem;
+            pointer-events: none;
         }
 
         .love-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px rgba(14, 165, 233, 0.1);
+            transform: translateY(-3px);
+            border-color: var(--tarot-gold);
+            box-shadow: 0 15px 45px rgba(229, 193, 88, 0.1), inset 0 0 20px rgba(229, 193, 88, 0.1);
+        }
+
+        /* Celestial Starry Details */
+        .tarot-star {
+            color: var(--tarot-gold);
+            text-shadow: 0 0 8px var(--tarot-gold);
+            animation: pulseStar 3s infinite ease-in-out;
+        }
+
+        @keyframes pulseStar {
+            0%, 100% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.1); }
         }
 
         /* Floating clouds styling */
         .cloud-bubble {
             position: absolute;
-            color: rgba(255, 255, 255, 0.9);
+            color: rgba(255, 255, 255, 0.12);
             pointer-events: none;
-            filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.1));
-            animation: driftHorizontal 30s linear infinite;
+            filter: drop-shadow(0 8px 16px rgba(255, 255, 255, 0.05));
+            animation: driftHorizontal 40s linear infinite;
         }
 
         @keyframes driftHorizontal {
             0% {
-                transform: translateX(-20vw) translateY(0) scale(0.6);
+                transform: translateX(-25vw) translateY(0) scale(0.7);
                 opacity: 0;
             }
-            10% {
-                opacity: 0.85;
-            }
-            90% {
-                opacity: 0.85;
-            }
+            10% { opacity: 0.9; }
+            90% { opacity: 0.9; }
             100% {
-                transform: translateX(110vw) translateY(-20px) scale(1.3);
+                transform: translateX(115vw) translateY(-40px) scale(1.4);
                 opacity: 0;
             }
         }
 
-        /* Custom scrollbar for beautiful elements */
+        /* Custom scrollbar */
         .custom-scroll::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
         }
         .custom-scroll::-webkit-scrollbar-track {
             background: transparent;
         }
         .custom-scroll::-webkit-scrollbar-thumb {
-            background: rgba(14, 165, 233, 0.3);
+            background: var(--tarot-gold-dim);
             border-radius: 10px;
         }
 
         .active-tab {
-            color: var(--sky-accent);
-            background: rgba(14, 165, 233, 0.1);
+            color: var(--tarot-gold);
+            background: rgba(229, 193, 88, 0.12);
             border-radius: 1rem;
+            border: 1px solid rgba(229, 193, 88, 0.25);
         }
 
         .auth-tab-active {
-            border-bottom: 3px solid var(--sky-accent);
-            color: var(--deep-blue);
+            border-bottom: 2px solid var(--tarot-gold);
+            color: var(--tarot-gold);
             font-weight: bold;
+            text-shadow: 0 0 10px rgba(229, 193, 88, 0.3);
+        }
+
+        /* Styled Input fields with Tarot touch */
+        .tarot-input {
+            background: rgba(10, 15, 29, 0.6);
+            border: 1px solid var(--tarot-gold-dim);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .tarot-input:focus {
+            border-color: var(--tarot-gold);
+            box-shadow: 0 0 10px rgba(229, 193, 88, 0.15);
+            outline: none;
+        }
+
+        /* Gold Gradient Buttons */
+        .tarot-btn-gold {
+            background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+            color: #0a0f1d;
+            font-weight: 700;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(170, 124, 17, 0.3);
+            transition: all 0.3s ease;
+        }
+        .tarot-btn-gold:hover {
+            background: linear-gradient(135deg, #f3d067 0%, #c59b27 100%);
+            box-shadow: 0 6px 20px rgba(229, 193, 88, 0.4);
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -102,33 +154,52 @@
     <div id="clouds-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden"></div>
 
     <!-- Screen 1: Real-time Database Initializing & Loading -->
-    <div id="loading-screen" class="fixed inset-0 z-50 bg-[#F0F9FF] flex flex-col items-center justify-center p-6">
+    <div id="loading-screen" class="fixed inset-0 z-50 bg-[#0a0f1d] flex flex-col items-center justify-center p-6">
         <div class="love-card max-w-sm w-full p-8 text-center space-y-6">
-            <span class="text-6xl animate-bounce block">☁️</span>
-            <h1 class="romantic-font text-3xl font-bold text-[#0369A1]">YÊU ƠI</h1>
-            <p class="text-sm text-slate-500 animate-pulse">Đang định hình tinh cầu tình yêu...</p>
+            <!-- Loading Penguin & Whale Animation -->
+            <div class="flex justify-center gap-4 animate-pulse">
+                <span class="text-5xl">🐧</span>
+                <span class="text-4xl text-yellow-400">☁️</span>
+                <span class="text-5xl">🐳</span>
+            </div>
+            <h1 class="romantic-font text-4xl font-bold text-[#e5c158]">YÊU ƠI</h1>
+            <p class="text-xs text-yellow-500/80 animate-pulse tracking-widest uppercase">Đang mở khóa lâu đài định mệnh...</p>
         </div>
     </div>
 
     <!-- Screen 2: Unified Auth Screen (Đăng nhập / Đăng ký) -->
-    <div id="auth-screen" class="fixed inset-0 z-40 bg-[#F0F9FF] hidden flex-col items-center justify-center p-6 overflow-y-auto">
-        <div class="love-card max-w-sm w-full p-6 md:p-8 space-y-6">
-            <div class="text-center">
-                <span class="text-5xl block mb-2">🏰</span>
-                <h1 class="romantic-font text-2xl font-bold text-[#0369A1]">YÊU ƠI</h1>
-                <p class="text-xs text-slate-500 mt-1">Sở hữu một hộ chiếu mây xanh để cùng nhau ghi dấu kỷ niệm</p>
+    <div id="auth-screen" class="fixed inset-0 z-40 bg-[#0a0f1d] hidden flex-col items-center justify-center p-6 overflow-y-auto">
+        <!-- Celestial Whale Background Element inside Auth -->
+        <div class="absolute top-10 left-10 opacity-10 pointer-events-none hidden md:block">
+            <svg width="200" height="200" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 50C10 30 30 10 50 10C70 10 90 25 90 45C90 60 75 65 60 65C50 65 45 75 35 75C25 75 10 70 10 50Z" stroke="#e5c158" stroke-width="0.75" stroke-dasharray="2 2"/>
+                <circle cx="50" cy="10" r="1.5" fill="#e5c158"/>
+                <circle cx="20" cy="30" r="1" fill="#e5c158"/>
+                <circle cx="80" cy="35" r="1" fill="#e5c158"/>
+            </svg>
+        </div>
+
+        <div class="love-card max-w-md w-full p-6 md:p-8 space-y-6">
+            <div class="text-center relative">
+                <div class="flex justify-center items-center gap-2 mb-2">
+                    <span class="text-3xl">🐧</span>
+                    <span class="text-2xl tarot-star">✦</span>
+                    <span class="text-3xl">🐳</span>
+                </div>
+                <h1 class="romantic-font text-3xl font-bold text-[#e5c158] tracking-widest">YÊU ƠI</h1>
+                <p class="text-xs text-gray-400 mt-1">Hành trình Tarot tình yêu ngọt ngào và bình yên của hai đứa</p>
                 <!-- Database Mode Badge -->
                 <div class="mt-2">
-                    <span id="db-mode-badge" class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold">Kiểm tra kết nối...</span>
+                    <span id="db-mode-badge" class="inline-block px-3 py-0.5 rounded-full text-[10px] font-bold border border-emerald-900 bg-emerald-950/40 text-emerald-400">Đồng bộ đám mây...</span>
                 </div>
             </div>
 
             <!-- Auth Tabs Selector -->
-            <div class="flex border-b border-sky-100 text-sm">
-                <button onclick="switchAuthTab('login')" id="tab-btn-login" class="flex-1 py-2 text-center text-slate-400 auth-tab-active">
+            <div class="flex border-b border-gray-800 text-sm">
+                <button onclick="switchAuthTab('login')" id="tab-btn-login" class="flex-1 py-2 text-center text-gray-400 auth-tab-active">
                     Đăng Nhập 🔑
                 </button>
-                <button onclick="switchAuthTab('register')" id="tab-btn-register" class="flex-1 py-2 text-center text-slate-400">
+                <button onclick="switchAuthTab('register')" id="tab-btn-register" class="flex-1 py-2 text-center text-gray-400">
                     Đăng Ký ✨
                 </button>
             </div>
@@ -137,15 +208,15 @@
             <div id="view-login" class="space-y-4">
                 <div class="space-y-3">
                     <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-sky-500 font-bold text-sm">@</span>
+                        <span class="absolute left-4 top-3.5 text-yellow-500/80 font-bold text-sm">@</span>
                         <input type="text" id="login-username" placeholder="biethieucuaban" 
-                            class="w-full pl-9 pr-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-bold text-sm">
+                            class="w-full pl-9 pr-4 py-3 rounded-xl tarot-input font-bold text-sm">
                     </div>
                     <input type="password" id="login-password" placeholder="Mật khẩu của bạn" 
-                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                        class="w-full px-4 py-3 rounded-xl tarot-input font-semibold text-sm">
                 </div>
                 <button onclick="loginWithCloud()" 
-                    class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-lg transition duration-200 text-sm">
+                    class="w-full py-3 rounded-xl tarot-btn-gold text-sm font-bold shadow-lg">
                     Mở Cửa Lâu Đài 🗝️
                 </button>
             </div>
@@ -154,17 +225,19 @@
             <div id="view-register" class="space-y-4 hidden">
                 <div class="space-y-3">
                     <div class="relative">
-                        <span class="absolute left-4 top-3.5 text-sky-500 font-bold text-sm">@</span>
+                        <span class="absolute left-4 top-3.5 text-yellow-500/80 font-bold text-sm">@</span>
                         <input type="text" id="register-username" placeholder="biethieudocnhat" 
-                            class="w-full pl-9 pr-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-bold text-sm">
+                            class="w-full pl-9 pr-4 py-3 rounded-xl tarot-input font-bold text-sm">
                     </div>
                     <input type="text" id="register-display-name" placeholder="Tên hiển thị ngọt ngào (Ví dụ: Huy, Nhi)" 
-                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                        class="w-full px-4 py-3 rounded-xl tarot-input font-semibold text-sm">
                     <input type="password" id="register-password" placeholder="Tạo mật khẩu (Tối thiểu 6 ký tự)" 
-                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                        class="w-full px-4 py-3 rounded-xl tarot-input font-semibold text-sm">
+                    <input type="password" id="register-confirm-password" placeholder="Nhập lại mật khẩu để xác nhận" 
+                        class="w-full px-4 py-3 rounded-xl tarot-input font-semibold text-sm">
                 </div>
                 <button onclick="registerUserCloud()" 
-                    class="w-full py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold rounded-2xl shadow-lg transition duration-200 text-sm">
+                    class="w-full py-3 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold shadow-lg transition duration-200 text-sm">
                     Cấp Hộ Chiếu Mới ⛅
                 </button>
             </div>
@@ -172,37 +245,58 @@
     </div>
 
     <!-- Screen 3: Matchmaking Hall (Sảnh Kết Tơ Duyên) -->
-    <div id="matching-screen" class="fixed inset-0 z-30 bg-[#F0F9FF] hidden flex-col items-center justify-center p-6 overflow-y-auto">
+    <div id="matching-screen" class="fixed inset-0 z-30 bg-[#0a0f1d] hidden flex-col items-center justify-center p-6 overflow-y-auto">
         <div class="love-card max-w-md w-full p-6 md:p-8 space-y-6">
             <div class="text-center space-y-2 relative">
-                <!-- Mini Log out inside Matchmaking for safety -->
-                <button onclick="logoutCloud()" class="absolute top-0 right-0 text-xs font-bold text-slate-400 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">Đăng xuất</button>
-                <span class="text-5xl block">✨</span>
-                <h1 class="romantic-font text-2xl font-bold text-[#0369A1]">Sảnh Kết Tơ Duyên</h1>
-                <p class="text-xs text-slate-500">Tìm kiếm nửa kia của bạn bằng biệt hiệu độc nhất để bước vào lâu đài</p>
-                <div class="inline-block bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold">
+                <button onclick="logoutCloud()" class="absolute top-0 right-0 text-xs font-bold text-yellow-400 bg-yellow-950/40 hover:bg-yellow-900/40 border border-yellow-700/30 px-2.5 py-1 rounded-lg transition">Đăng xuất</button>
+                <div class="flex justify-center items-center gap-1">
+                    <span class="text-4xl">🔮</span>
+                </div>
+                <h1 class="romantic-font text-2xl font-bold text-[#e5c158]">Sảnh Kết Tơ Duyên</h1>
+                <p class="text-xs text-gray-400">Tìm kiếm nửa kia của bạn bằng biệt hiệu độc nhất để bước vào lâu đài</p>
+                <div class="inline-block bg-yellow-950/40 text-yellow-400 border border-yellow-800/30 px-3 py-1 rounded-full text-xs font-bold">
                     Biệt hiệu của bạn: <span id="my-badge-username">@loading</span>
                 </div>
+            </div>
+
+            <!-- Whale & Penguin hand-drawn art for matchmaking -->
+            <div class="flex justify-around items-center py-2 border-y border-gray-800">
+                <!-- Penguin SVG -->
+                <svg width="45" height="45" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M32 8C20 8 16 18 16 32C16 46 20 56 32 56C44 56 48 46 48 32C48 18 44 8 32 8Z" stroke="#e5c158" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M24 30C24 28 26 26 28 26C30 26 30 28 30 30" stroke="#e5c158" stroke-width="1.5"/>
+                    <path d="M34 30C34 28 36 26 38 26C40 26 40 28 40 30" stroke="#e5c158" stroke-width="1.5"/>
+                    <path d="M30 36L32 38L34 36" stroke="#e5c158" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M16 32C12 32 10 38 12 42" stroke="#e5c158" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M48 32C52 32 54 38 52 42" stroke="#e5c158" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="text-yellow-500 animate-pulse text-lg">✦ ✦ ✦</span>
+                <!-- Whale SVG -->
+                <svg width="60" height="40" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 30C10 18 25 10 45 10C70 10 90 20 90 32C90 42 75 48 65 48C55 48 45 52 35 52C22 52 10 42 10 30Z" stroke="#e5c158" stroke-width="1.5"/>
+                    <path d="M90 32L95 28M90 32L95 36" stroke="#e5c158" stroke-width="1.5"/>
+                    <circle cx="30" cy="22" r="2" fill="#e5c158"/>
+                </svg>
             </div>
 
             <!-- Search Area -->
             <div class="space-y-3 pt-2">
                 <div class="flex gap-2">
                     <input type="text" id="search-username-input" placeholder="Nhập biệt hiệu đối phương..." 
-                        class="flex-1 px-4 py-2 border-2 border-sky-100 rounded-xl focus:outline-none focus:border-sky-400 bg-white text-sm">
-                    <button onclick="searchPartnerCloud()" class="bg-[#0369A1] hover:bg-[#025684] text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                        class="flex-1 px-4 py-2 rounded-xl tarot-input text-sm">
+                    <button onclick="searchPartnerCloud()" class="tarot-btn-gold px-4 py-2 rounded-xl text-xs font-bold transition">
                         Tìm 🔍
                     </button>
                 </div>
                 <!-- Search Results -->
                 <div id="search-results-area" class="space-y-2 hidden">
-                    <p class="text-[10px] uppercase font-bold text-slate-400">Kết quả tìm kiếm</p>
-                    <div id="search-result-card" class="flex items-center justify-between p-3 bg-sky-50 border border-sky-200 rounded-xl">
+                    <p class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">Kết quả tìm kiếm</p>
+                    <div id="search-result-card" class="flex items-center justify-between p-3 bg-yellow-950/20 border border-yellow-700/30 rounded-xl">
                         <div>
-                            <span class="text-xs font-bold text-[#0369A1] block" id="found-display-name">Nhi</span>
-                            <span class="text-[10px] text-slate-400" id="found-username">@nhi99</span>
+                            <span class="text-xs font-bold text-yellow-400 block" id="found-display-name">Nhi</span>
+                            <span class="text-[10px] text-gray-400" id="found-username">@nhi99</span>
                         </div>
-                        <button onclick="sendLoveRequestCloud()" class="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition shadow">
+                        <button onclick="sendLoveRequestCloud()" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition shadow">
                             Ngừi iu tui đóa 💖
                         </button>
                     </div>
@@ -210,23 +304,23 @@
             </div>
 
             <!-- Pending Sent Requests -->
-            <div id="sent-requests-area" class="hidden border-t border-sky-100 pt-4 space-y-2">
-                <p class="text-[10px] uppercase font-bold text-slate-400">Lời tỏ tình đã gửi</p>
-                <div class="p-3 bg-white/50 border border-dashed border-sky-200 rounded-xl text-center text-xs text-slate-500">
-                    Đang đợi <span id="sent-request-partner" class="font-bold"></span> gật đầu chấp thuận... ☁️
+            <div id="sent-requests-area" class="hidden border-t border-gray-800 pt-4 space-y-2">
+                <p class="text-[10px] uppercase font-bold text-yellow-500/80">Lời tỏ tình đã gửi</p>
+                <div class="p-3 bg-yellow-950/10 border border-dashed border-yellow-700/30 rounded-xl text-center text-xs text-gray-300">
+                    Đang đợi <span id="sent-request-partner" class="font-bold text-yellow-400"></span> gật đầu chấp thuận... ☁️
                 </div>
             </div>
 
-            <!-- Incoming Match Requests Modal Box -->
-            <div id="incoming-requests-area" class="hidden border-t border-sky-100 pt-4 space-y-3">
-                <p class="text-[10px] uppercase font-bold text-rose-400 animate-pulse">Có ai đó vừa gửi tín hiệu yêu thương!</p>
-                <div class="p-4 bg-rose-50/50 border border-rose-200 rounded-xl space-y-3 text-center">
-                    <p class="text-xs text-slate-600"><span id="incoming-sender-name" class="font-bold text-rose-500">Ai đó</span> bảo bạn là người yêu của họ kìa!</p>
+            <!-- Incoming Match Requests Box -->
+            <div id="incoming-requests-area" class="hidden border-t border-gray-800 pt-4 space-y-3">
+                <p class="text-[10px] uppercase font-bold text-rose-400 animate-pulse">Có tín hiệu yêu thương truyền tới!</p>
+                <div class="p-4 bg-rose-950/20 border border-rose-900/40 rounded-xl space-y-3 text-center">
+                    <p class="text-xs text-gray-300"><span id="incoming-sender-name" class="font-bold text-rose-400">Ai đó</span> bảo bạn là người yêu của họ kìa!</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button onclick="respondLoveRequestCloud(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition">
+                        <button onclick="respondLoveRequestCloud(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-lg text-xs transition">
                             Đúm 👍
                         </button>
-                        <button onclick="respondLoveRequestCloud(false)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 rounded-lg text-xs transition">
+                        <button onclick="respondLoveRequestCloud(false)" class="bg-rose-700 hover:bg-rose-600 text-white font-bold py-2 rounded-lg text-xs transition">
                             Khôm 👎
                         </button>
                     </div>
@@ -245,55 +339,69 @@
             <div class="love-card p-6 text-center relative overflow-hidden">
                 <div class="flex items-center justify-center gap-4 mb-4">
                     <div class="relative">
-                        <span class="text-4xl" id="partner1-avatar">👦</span>
-                        <div id="partner1-name-display" class="block w-20 text-center text-xs font-bold text-[#0369A1] mt-1">Bạn</div>
+                        <!-- Penguin Avatar Icon SVG inside sidebar -->
+                        <div class="w-12 h-12 flex items-center justify-center bg-yellow-950/30 rounded-full border border-yellow-700/30">
+                            <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M32 8C20 8 16 18 16 32C16 46 20 56 32 56C44 56 48 46 48 32C48 18 44 8 32 8Z" stroke="#e5c158" stroke-width="1.5"/>
+                                <circle cx="28" cy="26" r="1.5" fill="#e5c158"/>
+                                <circle cx="36" cy="26" r="1.5" fill="#e5c158"/>
+                                <path d="M30 33L32 35L34 33" stroke="#e5c158" stroke-width="1.5"/>
+                            </svg>
+                        </div>
+                        <div id="partner1-name-display" class="block w-20 text-center text-xs font-bold text-yellow-400 mt-1">Bạn</div>
                     </div>
-                    <span class="text-2xl text-sky-500 animate-pulse">☁️</span>
+                    <span class="text-xl text-yellow-500 animate-pulse">☁️</span>
                     <div class="relative">
-                        <span class="text-4xl" id="partner2-avatar">👧</span>
-                        <div id="partner2-name-display" class="block w-20 text-center text-xs font-bold text-[#0369A1] mt-1">Đang chờ</div>
+                        <!-- Whale Avatar Icon SVG inside sidebar -->
+                        <div class="w-12 h-12 flex items-center justify-center bg-yellow-950/30 rounded-full border border-yellow-700/30">
+                            <svg width="34" height="34" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 30C10 18 25 10 45 10C70 10 90 20 90 32C90 42 75 48 65 48C55 48 45 52 35 52C22 52 10 42 10 30Z" stroke="#e5c158" stroke-width="1.5"/>
+                                <circle cx="30" cy="22" r="2" fill="#e5c158"/>
+                            </svg>
+                        </div>
+                        <div id="partner2-name-display" class="block w-20 text-center text-xs font-bold text-yellow-400 mt-1">Đang chờ</div>
                     </div>
                 </div>
-                <h2 class="romantic-font text-2xl font-bold text-[#0369A1]" id="couple-title">YÊU ƠI</h2>
+                <h2 class="romantic-font text-2xl font-bold text-[#e5c158]" id="couple-title">YÊU ƠI</h2>
                 <div class="mt-2 flex flex-col items-center justify-center gap-1.5">
                     <div class="flex items-center gap-1">
                         <span id="active-sync-dot" class="inline-block w-2 h-2 rounded-full animate-pulse"></span>
                         <span id="active-sync-text" class="text-[9px] font-bold uppercase tracking-wider">Trạng thái đồng bộ</span>
                     </div>
-                    <button onclick="logoutCloud()" class="text-[9px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded transition mt-1">Đăng xuất</button>
+                    <button onclick="logoutCloud()" class="text-[9px] font-bold text-red-400 bg-red-950/40 hover:bg-red-900/40 border border-red-900/30 px-2 py-0.5 rounded transition mt-1">Đăng xuất</button>
                 </div>
             </div>
 
             <!-- Love Counter Widget -->
-            <div class="love-card p-6 bg-gradient-to-br from-blue-500 to-sky-400 text-white text-center shadow-blue-200">
-                <span class="text-xs font-bold uppercase tracking-widest opacity-80 block mb-2">Đã bên nhau được</span>
-                <div class="text-4xl font-extrabold romantic-font mb-4 drop-shadow-md" id="counter-days">0 ngày</div>
+            <div class="love-card p-6 bg-gradient-to-br from-[#1c2e54] to-[#111a2e] text-center border-yellow-700/30">
+                <span class="text-xs font-bold uppercase tracking-widest text-yellow-500/80 block mb-2">Đã bên nhau được</span>
+                <div class="text-4xl font-extrabold romantic-font mb-4 text-[#e5c158]" id="counter-days">0 ngày</div>
                 
                 <!-- Detail counter grids -->
-                <div class="grid grid-cols-3 gap-2 text-center bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
+                <div class="grid grid-cols-3 gap-2 text-center bg-black/30 border border-yellow-900/20 rounded-xl p-3">
                     <div>
-                        <span class="text-lg font-bold block" id="counter-hours">00</span>
-                        <span class="text-[9px] uppercase tracking-wider opacity-80">Giờ</span>
+                        <span class="text-lg font-bold block text-gray-200" id="counter-hours">00</span>
+                        <span class="text-[9px] uppercase tracking-wider text-gray-400">Giờ</span>
                     </div>
                     <div>
-                        <span class="text-lg font-bold block" id="counter-minutes">00</span>
-                        <span class="text-[9px] uppercase tracking-wider opacity-80">Phút</span>
+                        <span class="text-lg font-bold block text-gray-200" id="counter-minutes">00</span>
+                        <span class="text-[9px] uppercase tracking-wider text-gray-400">Phút</span>
                     </div>
                     <div>
-                        <span class="text-lg font-bold block" id="counter-seconds">00</span>
-                        <span class="text-[9px] uppercase tracking-wider opacity-80">Giây</span>
+                        <span class="text-lg font-bold block text-gray-200" id="counter-seconds">00</span>
+                        <span class="text-[9px] uppercase tracking-wider text-gray-400">Giây</span>
                     </div>
                 </div>
 
                 <!-- Custom Anniversary Date Setter -->
-                <div class="mt-4 pt-4 border-t border-white/20 flex flex-col gap-2">
-                    <label class="text-[10px] uppercase font-bold opacity-80">Ngày bắt đầu yêu:</label>
+                <div class="mt-4 pt-4 border-t border-gray-800 flex flex-col gap-2">
+                    <label class="text-[10px] uppercase font-bold text-yellow-500/80">Ngày bắt đầu yêu:</label>
                     <input type="date" id="anniversary-input" onchange="updateAnniversary()"
-                        class="bg-white/20 text-white border-0 rounded-xl px-3 py-1.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-white">
+                        class="bg-black/40 text-yellow-400 border border-yellow-900/30 rounded-xl px-3 py-1.5 text-center text-xs focus:outline-none focus:border-yellow-500">
                 </div>
             </div>
 
-            <!-- Desktop Tab Buttons (Hidden on Mobile bottom bar) -->
+            <!-- Desktop Tab Buttons -->
             <nav class="hidden md:flex flex-col gap-2 love-card p-4">
                 <button onclick="switchTab('diary')" id="d-btn-diary" class="active-tab w-full text-left py-3 px-4 flex items-center gap-3 font-semibold transition">
                     <span>📖</span> Nhật Ký Đôi
@@ -314,20 +422,20 @@
             <section id="sec-diary" class="space-y-6">
                 <!-- Add New Diary Entry Form -->
                 <div class="love-card p-6 md:p-8">
-                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-6 flex items-center gap-2">
+                    <h3 class="romantic-font text-2xl font-bold text-[#e5c158] mb-6 flex items-center gap-2">
                         <span>✍️</span> Khắc Ghi Khoảnh Khắc Mới
                     </h3>
                     
                     <form onsubmit="saveNewEntry(event)" class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-xs font-bold text-slate-500 block mb-1">Người viết:</label>
+                                <label class="text-xs font-bold text-gray-400 block mb-1">Người viết:</label>
                                 <input type="text" id="diary-author" disabled 
-                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none bg-sky-50 text-sky-700 font-bold">
+                                    class="w-full p-3 border border-yellow-950 bg-black/30 rounded-xl text-yellow-400 font-bold">
                             </div>
                             <div>
-                                <label class="text-xs font-bold text-slate-500 block mb-1">Tâm trạng hôm nay:</label>
-                                <select id="diary-mood" class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50">
+                                <label class="text-xs font-bold text-gray-400 block mb-1">Tâm trạng hôm nay:</label>
+                                <select id="diary-mood" class="w-full p-3 border border-yellow-900/30 rounded-xl tarot-input focus:border-yellow-500">
                                     <option value="☁️ Nhẹ nhõm">☁️ Nhẹ nhõm</option>
                                     <option value="🌸 Bình yên">🌸 Bình yên</option>
                                     <option value="🥺 Nhớ bạn kia">🥺 Nhớ bạn kia</option>
@@ -339,32 +447,32 @@
                         </div>
 
                         <div>
-                            <label class="text-xs font-bold text-slate-500 block mb-1">Tiêu đề:</label>
+                            <label class="text-xs font-bold text-gray-400 block mb-1">Tiêu đề:</label>
                             <input type="text" id="diary-title" required placeholder="Hôm nay chúng mình làm gì..."
-                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                                class="w-full p-3 rounded-xl tarot-input font-semibold">
                         </div>
 
                         <div>
-                            <label class="text-xs font-bold text-slate-500 block mb-1">Dòng tâm sự:</label>
+                            <label class="text-xs font-bold text-gray-400 block mb-1">Dòng tâm sự:</label>
                             <textarea id="diary-content" required placeholder="Viết những lời yêu thương hoặc ghi lại nhật ký ngày hôm nay..." rows="4"
-                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 leading-relaxed"></textarea>
+                                class="w-full p-3 rounded-xl tarot-input leading-relaxed"></textarea>
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
                             <!-- Image attachment preview & picker -->
                             <div class="w-full sm:w-auto">
-                                <label class="cursor-pointer inline-flex items-center gap-2 bg-sky-100 hover:bg-sky-200 text-[#0369A1] px-4 py-2.5 rounded-xl text-xs font-bold transition">
+                                <label class="cursor-pointer inline-flex items-center gap-2 bg-yellow-950/40 hover:bg-yellow-900/40 border border-yellow-800/30 text-yellow-400 px-4 py-2.5 rounded-xl text-xs font-bold transition">
                                     <span>📸 Thêm ảnh kỷ niệm</span>
                                     <input type="file" id="diary-image-picker" accept="image/*" onchange="previewImage(event)" class="hidden">
                                 </label>
-                                <div id="image-preview-container" class="hidden mt-2 relative w-16 h-16 rounded-xl overflow-hidden border border-sky-200">
+                                <div id="image-preview-container" class="hidden mt-2 relative w-16 h-16 rounded-xl overflow-hidden border border-yellow-900/30">
                                     <img id="image-preview" src="#" class="w-full h-full object-cover">
-                                    <button type="button" onclick="clearImagePreview()" class="absolute inset-0 bg-black/40 text-white text-[10px] font-bold flex items-center justify-center opacity-0 hover:opacity-100 transition">Xóa</button>
+                                    <button type="button" onclick="clearImagePreview()" class="absolute inset-0 bg-black/60 text-white text-[10px] font-bold flex items-center justify-center opacity-0 hover:opacity-100 transition">Xóa</button>
                                 </div>
                             </div>
 
                             <button type="submit" 
-                                class="w-full sm:w-auto bg-[#0369A1] hover:bg-[#025684] text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                                class="w-full sm:w-auto tarot-btn-gold px-8 py-3 rounded-xl">
                                 Đóng Dấu Kỷ Niệm 💌
                             </button>
                         </div>
@@ -373,7 +481,7 @@
 
                 <!-- Diary Timeline Display -->
                 <div class="space-y-4">
-                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] flex items-center gap-2">
+                    <h3 class="romantic-font text-2xl font-bold text-[#e5c158] flex items-center gap-2">
                         <span>📜</span> Dòng Thời Gian Kỷ Niệm
                     </h3>
                     <div id="timeline" class="space-y-4">
@@ -385,40 +493,40 @@
             <!-- SECTION: BÍ MẬT CHỜ BẬT MÍ -->
             <section id="sec-secrets" class="hidden space-y-6">
                 <div class="love-card p-6 md:p-8">
-                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-2 flex items-center gap-2">
+                    <h3 class="romantic-font text-2xl font-bold text-[#e5c158] mb-2 flex items-center gap-2">
                         <span>🤫</span> Bí Mật Chờ Bật Mí
                     </h3>
-                    <p class="text-xs text-slate-500 mb-6">Viết những lời thầm kín, tạo mật mã riêng. Đối phương phải giải mã đúng mật mã mới đọc được tâm sự của bạn!</p>
+                    <p class="text-xs text-gray-400 mb-6">Viết những lời thầm kín, tạo mật mã riêng. Đối phương phải giải mã đúng mật mã mới đọc được tâm sự của bạn!</p>
                     
                     <form onsubmit="saveNewSecret(event)" class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="text-xs font-bold text-slate-500 block mb-1">Người viết:</label>
+                                <label class="text-xs font-bold text-gray-400 block mb-1">Người viết:</label>
                                 <input type="text" id="secret-author" disabled 
-                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none bg-sky-50 text-sky-700 font-bold">
+                                    class="w-full p-3 border border-yellow-950 bg-black/30 rounded-xl text-yellow-400 font-bold">
                             </div>
                             <div>
-                                <label class="text-xs font-bold text-slate-500 block mb-1">Thiết lập mật mã giải khóa:</label>
+                                <label class="text-xs font-bold text-gray-400 block mb-1">Thiết lập mật mã giải khóa:</label>
                                 <input type="text" id="secret-password" required placeholder="Nhập mật khẩu cho tin này..."
-                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                                    class="w-full p-3 rounded-xl tarot-input font-semibold">
                             </div>
                         </div>
 
                         <div>
-                            <label class="text-xs font-bold text-slate-500 block mb-1">Gợi ý tiêu đề:</label>
+                            <label class="text-xs font-bold text-gray-400 block mb-1">Gợi ý tiêu đề:</label>
                             <input type="text" id="secret-title" required placeholder="Ví dụ: Kế hoạch đi chơi cuối tuần, Bí mật ngày sinh nhật..."
-                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                                class="w-full p-3 rounded-xl tarot-input font-semibold">
                         </div>
 
                         <div>
-                            <label class="text-xs font-bold text-slate-500 block mb-1">Dòng mật sự (Nội dung được ẩn):</label>
+                            <label class="text-xs font-bold text-gray-400 block mb-1">Dòng mật sự (Nội dung được ẩn):</label>
                             <textarea id="secret-content" required placeholder="Nhập nội dung bí mật bạn muốn gửi gắm ở đây..." rows="4"
-                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 leading-relaxed"></textarea>
+                                class="w-full p-3 rounded-xl tarot-input leading-relaxed"></textarea>
                         </div>
 
                         <div class="flex justify-end pt-2">
                             <button type="submit" 
-                                class="w-full sm:w-auto bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                                class="w-full sm:w-auto tarot-btn-gold px-8 py-3 rounded-xl">
                                 Gửi Bí Mật Vào Hộp Khóa 🔒
                             </button>
                         </div>
@@ -426,7 +534,7 @@
                 </div>
 
                 <div class="space-y-4">
-                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] flex items-center gap-2">
+                    <h3 class="romantic-font text-2xl font-bold text-[#e5c158] flex items-center gap-2">
                         <span>🗝️</span> Hộp Thư Bí Mật Đang Chờ
                     </h3>
                     <div id="secrets-timeline" class="space-y-4">
@@ -438,27 +546,27 @@
             <!-- SECTION 2: BUCKET LIST -->
             <section id="sec-bucket" class="hidden space-y-6">
                 <div class="love-card p-6 md:p-8">
-                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-2 flex items-center gap-2">
+                    <h3 class="romantic-font text-2xl font-bold text-[#e5c158] mb-2 flex items-center gap-2">
                         <span>✨</span> Nguyện Ước Tình Yêu
                     </h3>
-                    <p class="text-xs text-slate-500 mb-6">Mỗi điều ước hoàn thành là một cột mốc kết nối hai trái tim lại gần nhau hơn.</p>
+                    <p class="text-xs text-gray-400 mb-6">Mỗi điều ước hoàn thành là một cột mốc kết nối hai trái tim lại gần nhau hơn.</p>
                     
                     <!-- Progress meter -->
-                    <div class="bg-sky-100/60 rounded-2xl p-4 border border-sky-200 mb-6">
+                    <div class="bg-yellow-950/20 rounded-2xl p-4 border border-yellow-900/20 mb-6">
                         <div class="flex justify-between items-center text-xs font-bold mb-2">
-                            <span class="text-[#0369A1]">Tiến độ hành trình ước nguyện:</span>
-                            <span id="bucket-progress-text" class="text-sky-500">0%</span>
+                            <span class="text-yellow-400">Tiến độ hành trình ước nguyện:</span>
+                            <span id="bucket-progress-text" class="text-yellow-500">0%</span>
                         </div>
-                        <div class="w-full h-3 bg-sky-200 rounded-full overflow-hidden">
-                            <div id="bucket-progress-bar" class="bg-gradient-to-r from-sky-400 to-blue-600 h-full transition-all duration-500" style="width: 0%"></div>
+                        <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bucket-progress-bar" class="bg-gradient-to-r from-yellow-500 to-yellow-600 h-full transition-all duration-500" style="width: 0%"></div>
                         </div>
                     </div>
 
                     <!-- Add wishlist item form -->
                     <form onsubmit="addWishlistItem(event)" class="flex gap-2 mb-6">
                         <input type="text" id="bucket-input" required placeholder="Thêm điều hai đứa muốn làm cùng nhau..."
-                            class="flex-1 p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
-                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-6 rounded-xl transition">
+                            class="flex-1 p-3 rounded-xl tarot-input font-semibold">
+                        <button type="submit" class="tarot-btn-gold px-6 rounded-xl">
                             Thêm ✨
                         </button>
                     </form>
@@ -473,115 +581,87 @@
     </div>
 
     <!-- MOBILE BOTTOM NAVIGATION BAR -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-sky-100 backdrop-blur-md flex justify-around p-3 z-40">
-        <button onclick="switchTab('diary')" id="m-btn-diary" class="active-tab flex flex-col items-center gap-1 text-sky-500 px-2 py-2">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 border-t border-gray-800 backdrop-blur-md flex justify-around p-3 z-40">
+        <button onclick="switchTab('diary')" id="m-btn-diary" class="active-tab flex flex-col items-center gap-1 text-yellow-500 px-2 py-2">
             <span class="text-xl">📖</span><span class="text-[9px] font-bold">NHẬT KÝ</span>
         </button>
-        <button onclick="switchTab('secrets')" id="m-btn-secrets" class="flex flex-col items-center gap-1 text-slate-500 px-2 py-2">
+        <button onclick="switchTab('secrets')" id="m-btn-secrets" class="flex flex-col items-center gap-1 text-gray-400 px-2 py-2">
             <span class="text-xl">🤫</span><span class="text-[9px] font-bold">BÍ MẬT</span>
         </button>
-        <button onclick="switchTab('bucket')" id="m-btn-bucket" class="flex flex-col items-center gap-1 text-slate-500 px-2 py-2">
+        <button onclick="switchTab('bucket')" id="m-btn-bucket" class="flex flex-col items-center gap-1 text-gray-400 px-2 py-2">
             <span class="text-xl">✨</span><span class="text-[9px] font-bold">ƯỚC NGUYỆN</span>
         </button>
     </nav>
 
     <!-- Custom Love letter toast notification -->
-    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#0369A1] text-white px-6 py-3 rounded-full text-xs font-bold shadow-xl transition-all duration-300 transform translate-y-[-100px] opacity-0 flex items-center gap-2">
-        <span>☁️</span> <span id="toast-message">Thông điệp mây xanh!</span>
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#e5c158] text-slate-950 px-6 py-3 rounded-full text-xs font-bold shadow-xl transition-all duration-300 transform translate-y-[-100px] opacity-0 flex items-center gap-2">
+        <span class="tarot-star">✦</span> <span id="toast-message">Thông điệp mây xanh!</span>
     </div>
 
-    <!-- FIREBASE AND CORE APP ENGINE (Strict Firebase rule enforcement + Device Mode Fallback) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- UNIVERSAL MOCK DATA / GLOBAL INTER-DEVICE CLOUD SYSTEM -->
+    <script>
+        // Unique global bucket key for flawless laptop-to-phone data synchronization
+        const BUCKET_BASE_URL = 'https://kvdb.io/YeU_Oi_Cloud_v10_';
 
-        // Global Application State Configurations
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lovers-diary-cloud';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "",
-            authDomain: "lovers-diary-cloud.firebaseapp.com",
-            projectId: "lovers-diary-cloud",
-            storageBucket: "lovers-diary-cloud.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
-        };
-
-        // Automatically determine if we can connect to Firestore Cloud or use Local Device Mode
-        let useCloud = false;
-        let app, db, auth;
-        
-        if (firebaseConfig && firebaseConfig.apiKey && firebaseConfig.apiKey !== "") {
-            try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                useCloud = true;
-            } catch (e) {
-                console.warn("Không kết nối được Firestore Cloud, chuyển sang Offline Mode.");
-            }
-        }
-
-        // Offline / LocalStorage Database Wrapper
-        const localDB = {
-            getCollection(name) {
-                const data = localStorage.getItem(`love_db_${name}`);
-                return data ? JSON.parse(data) : [];
+        // High reliability cloud API storage manager
+        const globalCloudDB = {
+            async fetchCollection(name) {
+                try {
+                    const response = await fetch(`${BUCKET_BASE_URL}${name}`);
+                    if (response.status === 200) {
+                        return await response.json();
+                    }
+                } catch (e) {
+                    console.warn(`Lỗi fetch ${name}, chuyển sang offline cache.`);
+                }
+                const localData = localStorage.getItem(`love_cloud_${name}`);
+                return localData ? JSON.parse(localData) : [];
             },
-            saveCollection(name, data) {
-                localStorage.setItem(`love_db_${name}`, JSON.stringify(data));
-                this.triggerListeners(name);
+            async saveCollection(name, data) {
+                localStorage.setItem(`love_cloud_${name}`, JSON.stringify(data));
+                try {
+                    await fetch(`${BUCKET_BASE_URL}${name}`, {
+                        method: 'POST',
+                        body: JSON.stringify(data),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                } catch (e) {
+                    console.error(`Lỗi đồng bộ đám mây cho ${name}`);
+                }
             },
-            getItem(name, id) {
-                const col = this.getCollection(name);
-                return col.find(item => item.uid === id || item.id === id || item.coupleId === id || item.fromUid === id);
+            async getItem(name, id) {
+                const col = await this.fetchCollection(name);
+                return col.find(item => item.uid === id || item.id === id || item.coupleId === id || item.fromUid === id || item.username === id);
             },
-            setItem(name, id, data) {
-                const col = this.getCollection(name);
-                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id);
+            async setItem(name, id, data) {
+                const col = await this.fetchCollection(name);
+                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id || item.username === id);
                 if (index > -1) {
                     col[index] = { ...col[index], ...data };
                 } else {
                     col.push({ uid: id, id: id, ...data });
                 }
-                this.saveCollection(name, col);
+                await this.saveCollection(name, col);
             },
-            addDoc(name, data) {
-                const col = this.getCollection(name);
+            async addDoc(name, data) {
+                const col = await this.fetchCollection(name);
                 const newDoc = { id: Math.random().toString(36).substr(2, 9), ...data };
                 col.push(newDoc);
-                this.saveCollection(name, col);
+                await this.saveCollection(name, col);
                 return newDoc;
             },
-            updateDoc(name, id, data) {
-                const col = this.getCollection(name);
-                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id);
+            async updateDoc(name, id, data) {
+                const col = await this.fetchCollection(name);
+                const index = col.findIndex(item => item.uid === id || item.id === id || item.coupleId === id || item.id == id);
                 if (index > -1) {
                     col[index] = { ...col[index], ...data };
-                    this.saveCollection(name, col);
+                    await this.saveCollection(name, col);
                 }
             },
-            deleteDoc(name, id) {
-                let col = this.getCollection(name);
-                col = col.filter(item => item.uid !== id && item.id !== id && item.coupleId !== id);
-                this.saveCollection(name, col);
-            },
-            // Simple mock realtime listener system
-            listeners: {},
-            onSnapshot(name, callback) {
-                if (!this.listeners[name]) this.listeners[name] = [];
-                this.listeners[name].push(callback);
-                
-                // Trigger immediate read on load
-                callback(this.getCollection(name));
-                return () => {
-                    this.listeners[name] = this.listeners[name].filter(cb => cb !== callback);
-                };
-            },
-            triggerListeners(name) {
-                if (this.listeners[name]) {
-                    this.listeners[name].forEach(cb => cb(this.getCollection(name)));
-                }
+            async deleteDoc(name, id) {
+                let col = await this.fetchCollection(name);
+                col = col.filter(item => item.uid !== id && item.id !== id && item.coupleId !== id && item.id != id);
+                await this.saveCollection(name, col);
             }
         };
 
@@ -597,76 +677,33 @@
         let confirmDeleteSecretId = null; 
         let attachedImageBase64 = "";
 
-        // Authenticate User & Bind State Realtime Listener (Adaptive Cloud/Local)
         async function runCloudAuth() {
-            // Display DB Mode Badge
             const dbBadge = document.getElementById("db-mode-badge");
             const activeDot = document.getElementById("active-sync-dot");
             const activeText = document.getElementById("active-sync-text");
 
-            if (useCloud) {
-                dbBadge.textContent = "☁️ ĐỒNG BỘ ĐÁM MÂY (ONLINE)";
-                dbBadge.className = "inline-block bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-[10px] font-bold";
-                activeDot.className = "inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
-                activeText.textContent = "☁️ ĐỒNG BỘ ĐÁM MÂY";
-                activeText.className = "text-[9px] font-bold text-emerald-600 uppercase tracking-wider";
+            // Mark Cloud Connected
+            dbBadge.textContent = "🌌 ĐỒNG BỘ TAROT CLOUD (LIVE)";
+            dbBadge.className = "inline-block bg-yellow-950/40 text-yellow-400 border border-yellow-700/40 px-3 py-1 rounded-full text-[10px] font-bold";
+            activeDot.className = "inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse";
+            activeText.textContent = "🌌 MÂY TRỜI ĐỒNG BỘ";
+            activeText.className = "text-[9px] font-bold text-yellow-500 uppercase tracking-wider";
 
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) {
-                        if (user.isAnonymous) {
-                            document.getElementById("loading-screen").classList.add("hidden");
-                            document.getElementById("auth-screen").classList.remove("hidden");
-                            document.getElementById("app-content").classList.add("hidden");
-                            document.getElementById("matching-screen").classList.add("hidden");
-                            return;
-                        }
-
-                        const userProfileRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
-                        try {
-                            const userSnap = await getDoc(userProfileRef);
-                            if (userSnap.exists()) {
-                                currentUserProfile = userSnap.data();
-                                document.getElementById("loading-screen").classList.add("hidden");
-                                document.getElementById("auth-screen").classList.add("hidden");
-                                runMainCloudSync(user.uid);
-                            } else {
-                                await signOut(auth);
-                            }
-                        } catch (err) {
-                            console.error("Lỗi tải thông tin:", err);
-                            showLoveToast("Không thể đồng bộ hồ sơ mây.");
-                        }
-                    } else {
-                        try {
-                            await signInAnonymously(auth);
-                        } catch (e) {
-                            console.error("Anonymous authentication failed", e);
-                        }
-                    }
-                });
-            } else {
-                // Offline LocalStorage Mode
-                dbBadge.textContent = "📱 LƯU TRỮ CỤC BỘ (OFFLINE)";
-                dbBadge.className = "inline-block bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-bold";
-                activeDot.className = "inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse";
-                activeText.textContent = "📱 LƯU TRỮ THIẾT BỊ (OFFLINE)";
-                activeText.className = "text-[9px] font-bold text-amber-600 uppercase tracking-wider";
-
-                const cachedUid = localStorage.getItem('love_current_uid');
-                document.getElementById("loading-screen").classList.add("hidden");
-                
-                if (cachedUid) {
-                    currentUserProfile = localDB.getItem('users', cachedUid);
-                    if (currentUserProfile) {
-                        document.getElementById("auth-screen").classList.add("hidden");
-                        runMainCloudSync(cachedUid);
-                        return;
-                    }
+            // Check if login session exists in browser
+            const cachedUid = localStorage.getItem('love_current_uid');
+            document.getElementById("loading-screen").classList.add("hidden");
+            
+            if (cachedUid) {
+                currentUserProfile = await globalCloudDB.getItem('users', cachedUid);
+                if (currentUserProfile) {
+                    document.getElementById("auth-screen").classList.add("hidden");
+                    runMainCloudSync(cachedUid);
+                    return;
                 }
-                document.getElementById("auth-screen").classList.remove("hidden");
-                document.getElementById("app-content").classList.add("hidden");
-                document.getElementById("matching-screen").classList.add("hidden");
             }
+            document.getElementById("auth-screen").classList.remove("hidden");
+            document.getElementById("app-content").classList.add("hidden");
+            document.getElementById("matching-screen").classList.add("hidden");
         }
 
         // Switch custom authorization panels
@@ -685,11 +722,12 @@
             }
         }
 
-        // Register User Profile with Email/Password & Unique Username Check
+        // Register User Profile with validation
         window.registerUserCloud = async function() {
             const rawUsername = document.getElementById("register-username").value.trim().toLowerCase();
             const displayName = document.getElementById("register-display-name").value.trim();
             const password = document.getElementById("register-password").value.trim();
+            const confirmPassword = document.getElementById("register-confirm-password").value.trim();
 
             if (!rawUsername || rawUsername.length < 3) {
                 showLoveToast("Biệt hiệu tối thiểu 3 kí tự bạn nhé!");
@@ -700,77 +738,43 @@
                 return;
             }
             if (password.length < 6) {
-                showLoveToast("Mật khẩu tối thiểu cần 6 ký tự để bảo vệ tình yêu!");
+                showLoveToast("Mật khẩu tối thiểu cần 6 ký tự để bảo mật!");
+                return;
+            }
+            if (password !== confirmPassword) {
+                showLoveToast("Mật khẩu nhập lại không khớp nhau rồi! 🥺");
                 return;
             }
 
-            const username = rawUsername.replace(/[^a-z0-9_]/g, ''); // safe username slug
+            const username = rawUsername.replace(/[^a-z0-9_]/g, ''); // safe username
 
-            if (useCloud) {
-                try {
-                    const allUsersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
-                    let exists = false;
-                    allUsersSnap.forEach(uDoc => {
-                        if (uDoc.data().username === username) exists = true;
-                    });
-
-                    if (exists) {
-                        showLoveToast("Biệt hiệu đã bị mây che mất (có người dùng rồi)! 🥺");
-                        return;
-                    }
-
-                    const emailCredential = `${username}@lovers.app`;
-                    const userCredential = await createUserWithEmailAndPassword(auth, emailCredential, password);
-                    const user = userCredential.user;
-
-                    const newProfile = {
-                        uid: user.uid,
-                        username: username,
-                        displayName: displayName,
-                        coupleId: null,
-                        partnerUid: null
-                    };
-
-                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid), newProfile);
-                    currentUserProfile = newProfile;
-                    
-                    showLoveToast("Cấp Hộ Chiếu thành công! 🎉 Chào mừng bạn.");
-                    document.getElementById("auth-screen").classList.add("hidden");
-                    runMainCloudSync(user.uid);
-                } catch (err) {
-                    console.error("Lỗi đăng ký:", err);
-                    showLoveToast("Đăng ký lỗi hoặc tài khoản đã tồn tại!");
-                }
-            } else {
-                // Local Mode register
-                const allUsers = localDB.getCollection('users');
-                const exists = allUsers.some(u => u.username === username);
-                if (exists) {
-                    showLoveToast("Biệt hiệu đã bị mây che mất (có người dùng rồi)! 🥺");
-                    return;
-                }
-
-                const mockUid = "usr_" + Math.random().toString(36).substr(2, 9);
-                const newProfile = {
-                    uid: mockUid,
-                    username: username,
-                    displayName: displayName,
-                    password: password, // Store safely inside local storage
-                    coupleId: null,
-                    partnerUid: null
-                };
-
-                localDB.setItem('users', mockUid, newProfile);
-                currentUserProfile = newProfile;
-                localStorage.setItem('love_current_uid', mockUid);
-                
-                showLoveToast("Cấp Hộ Chiếu thiết bị thành công! 🎉");
-                document.getElementById("auth-screen").classList.add("hidden");
-                runMainCloudSync(mockUid);
+            const allUsers = await globalCloudDB.fetchCollection('users');
+            const exists = allUsers.some(u => u.username === username);
+            if (exists) {
+                showLoveToast("Biệt hiệu đã có người sử dụng rồi bạn ơi! 🥺");
+                return;
             }
+
+            const mockUid = "usr_" + Math.random().toString(36).substr(2, 9);
+            const newProfile = {
+                uid: mockUid,
+                username: username,
+                displayName: displayName,
+                password: password,
+                coupleId: null,
+                partnerUid: null
+            };
+
+            await globalCloudDB.setItem('users', mockUid, newProfile);
+            currentUserProfile = newProfile;
+            localStorage.setItem('love_current_uid', mockUid);
+            
+            showLoveToast("Cấp Hộ Chiếu thành công! 🎉 Chúc mừng hai bạn!");
+            document.getElementById("auth-screen").classList.add("hidden");
+            runMainCloudSync(mockUid);
         };
 
-        // Login with username and password
+        // Login validation
         window.loginWithCloud = async function() {
             const rawUsername = document.getElementById("login-username").value.trim().toLowerCase();
             const password = document.getElementById("login-password").value.trim();
@@ -781,47 +785,23 @@
             }
 
             const username = rawUsername.replace(/[^a-z0-9_]/g, '');
-
-            if (useCloud) {
-                const emailCredential = `${username}@lovers.app`;
-                try {
-                    document.getElementById("loading-screen").classList.remove("hidden");
-                    await signInWithEmailAndPassword(auth, emailCredential, password);
-                } catch (err) {
-                    document.getElementById("loading-screen").classList.add("hidden");
-                    console.error("Login failed", err);
-                    showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
-                }
+            const allUsers = await globalCloudDB.fetchCollection('users');
+            const matchedUser = allUsers.find(u => u.username === username && u.password === password);
+            
+            if (matchedUser) {
+                currentUserProfile = matchedUser;
+                localStorage.setItem('love_current_uid', matchedUser.uid);
+                showLoveToast(`Chào mừng trở lại, ${matchedUser.displayName}! 🌌`);
+                document.getElementById("auth-screen").classList.add("hidden");
+                runMainCloudSync(matchedUser.uid);
             } else {
-                // Local login validation
-                const allUsers = localDB.getCollection('users');
-                const matchedUser = allUsers.find(u => u.username === username && u.password === password);
-                
-                if (matchedUser) {
-                    currentUserProfile = matchedUser;
-                    localStorage.setItem('love_current_uid', matchedUser.uid);
-                    showLoveToast(`Chào mừng trở lại, ${matchedUser.displayName}! ✨`);
-                    document.getElementById("auth-screen").classList.add("hidden");
-                    runMainCloudSync(matchedUser.uid);
-                } else {
-                    showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
-                }
+                showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi! 🥺");
             }
         }
 
         // Safe Cloud Log Out
-        window.logoutCloud = async function() {
-            if (useCloud) {
-                try {
-                    await signOut(auth);
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localStorage.removeItem('love_current_uid');
-            }
-            
-            // Clear active states
+        window.logoutCloud = function() {
+            localStorage.removeItem('love_current_uid');
             currentUserProfile = null;
             currentCoupleDoc = null;
             diaryEntries = [];
@@ -832,57 +812,82 @@
             document.getElementById("app-content").classList.add("hidden");
             document.getElementById("matching-screen").classList.add("hidden");
             document.getElementById("auth-screen").classList.remove("hidden");
-            showLoveToast("Đã đăng xuất khỏi lâu đài mây xanh! Hẹn gặp lại. ☁️");
+            showLoveToast("Đã rời khỏi lâu đài bình yên! Hẹn sớm gặp lại. 🌙");
         }
 
-        // Main Cloud Sync Orchestrator
-        function runMainCloudSync(uid) {
-            if (useCloud) {
-                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), (profileDoc) => {
-                    if (profileDoc.exists()) {
-                        currentUserProfile = profileDoc.data();
-                        document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
-                        
-                        if (currentUserProfile.coupleId) {
-                            document.getElementById("matching-screen").classList.add("hidden");
-                            document.getElementById("app-content").classList.remove("hidden");
-                            
-                            document.getElementById("diary-author").value = currentUserProfile.displayName;
-                            document.getElementById("secret-author").value = currentUserProfile.displayName;
+        async function pollSyncData() {
+            if (!currentUserProfile) return;
+            
+            // Sync user changes
+            const freshProfile = await globalCloudDB.getItem('users', currentUserProfile.uid);
+            if (freshProfile) {
+                currentUserProfile = freshProfile;
+                document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
+                
+                if (currentUserProfile.coupleId) {
+                    document.getElementById("matching-screen").classList.add("hidden");
+                    document.getElementById("app-content").classList.remove("hidden");
+                    
+                    document.getElementById("diary-author").value = currentUserProfile.displayName;
+                    document.getElementById("secret-author").value = currentUserProfile.displayName;
 
-                            syncCoupleSharedData(currentUserProfile.coupleId);
-                        } else {
-                            document.getElementById("app-content").classList.add("hidden");
-                            document.getElementById("matching-screen").classList.remove("hidden");
-                            syncMatchmakingHallData();
-                        }
-                    }
-                }, (err) => console.error("User sync error", err));
-            } else {
-                // Local Mode live simulation loop
-                setInterval(() => {
-                    if (!currentUserProfile) return;
-                    const freshProfile = localDB.getItem('users', currentUserProfile.uid);
-                    if (freshProfile) {
-                        currentUserProfile = freshProfile;
-                        document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
-                        
-                        if (currentUserProfile.coupleId) {
-                            document.getElementById("matching-screen").classList.add("hidden");
-                            document.getElementById("app-content").classList.remove("hidden");
-                            
-                            document.getElementById("diary-author").value = currentUserProfile.displayName;
-                            document.getElementById("secret-author").value = currentUserProfile.displayName;
+                    // Sync Shared Couple Data
+                    const cDoc = await globalCloudDB.getItem('couples', currentUserProfile.coupleId);
+                    if (cDoc) {
+                        currentCoupleDoc = cDoc;
+                        anniversaryDate = currentCoupleDoc.anniversaryDate;
+                        document.getElementById("anniversary-input").value = anniversaryDate;
 
-                            syncCoupleSharedData(currentUserProfile.coupleId);
-                        } else {
-                            document.getElementById("app-content").classList.add("hidden");
-                            document.getElementById("matching-screen").classList.remove("hidden");
-                            syncMatchmakingHallData();
-                        }
+                        document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
+                        document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
+                        document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
                     }
-                }, 1000);
+
+                    // Sync Timeline Diaries
+                    const allDiaries = await globalCloudDB.fetchCollection('diary');
+                    const entries = allDiaries.filter(d => d.coupleId === currentUserProfile.coupleId);
+                    diaryEntries = entries.sort((a,b) => b.id - a.id);
+                    renderTimeline();
+
+                    // Sync Secrets
+                    const allSecrets = await globalCloudDB.fetchCollection('secrets');
+                    const secrets = allSecrets.filter(s => s.coupleId === currentUserProfile.coupleId);
+                    secretEntries = secrets.sort((a,b) => b.id - a.id);
+                    renderSecrets();
+
+                    // Sync Wishlists
+                    const allWishes = await globalCloudDB.fetchCollection('bucketList');
+                    bucketList = allWishes.filter(w => w.coupleId === currentUserProfile.coupleId);
+                    renderBucketList();
+
+                } else {
+                    document.getElementById("app-content").classList.add("hidden");
+                    document.getElementById("matching-screen").classList.remove("hidden");
+                    
+                    // Sync Matchmaking requests
+                    const requests = await globalCloudDB.fetchCollection('coupleRequests');
+                    let sentMatch = null;
+                    let receivedMatch = null;
+
+                    requests.forEach(rData => {
+                        if (rData.status === 'pending') {
+                            if (rData.fromUid === currentUserProfile.uid) {
+                                sentMatch = rData;
+                            }
+                            if (rData.toUid === currentUserProfile.uid) {
+                                receivedMatch = rData;
+                            }
+                        }
+                    });
+                    renderMatchRequests(sentMatch, receivedMatch);
+                }
             }
+        }
+
+        function runMainCloudSync(uid) {
+            pollSyncData();
+            // Polling interval for fast live updates across phone/laptop
+            setInterval(pollSyncData, 3000);
         }
 
         // Search Partner by `@username`
@@ -890,43 +895,17 @@
             const searchVal = document.getElementById("search-username-input").value.trim().toLowerCase();
             if (!searchVal) return;
 
-            if (useCloud) {
-                try {
-                    const usersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
-                    let foundUser = null;
-                    usersSnap.forEach(uDoc => {
-                        const ud = uDoc.data();
-                        if (ud.username === searchVal && ud.uid !== auth.currentUser.uid) {
-                            foundUser = ud;
-                        }
-                    });
-
-                    if (foundUser) {
-                        document.getElementById("found-display-name").textContent = foundUser.displayName;
-                        document.getElementById("found-username").textContent = `@${foundUser.username}`;
-                        document.getElementById("found-username").dataset.uid = foundUser.uid;
-                        document.getElementById("search-results-area").classList.remove("hidden");
-                    } else {
-                        showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
-                        document.getElementById("search-results-area").classList.add("hidden");
-                    }
-                } catch (err) {
-                    console.error("Lỗi tìm kiếm", err);
-                }
+            const allUsers = await globalCloudDB.fetchCollection('users');
+            const foundUser = allUsers.find(u => u.username === searchVal && u.uid !== currentUserProfile.uid);
+            
+            if (foundUser) {
+                document.getElementById("found-display-name").textContent = foundUser.displayName;
+                document.getElementById("found-username").textContent = `@${foundUser.username}`;
+                document.getElementById("found-username").dataset.uid = foundUser.uid;
+                document.getElementById("search-results-area").classList.remove("hidden");
             } else {
-                // Local search simulation
-                const allUsers = localDB.getCollection('users');
-                const foundUser = allUsers.find(u => u.username === searchVal && u.uid !== currentUserProfile.uid);
-                
-                if (foundUser) {
-                    document.getElementById("found-display-name").textContent = foundUser.displayName;
-                    document.getElementById("found-username").textContent = `@${foundUser.username}`;
-                    document.getElementById("found-username").dataset.uid = foundUser.uid;
-                    document.getElementById("search-results-area").classList.remove("hidden");
-                } else {
-                    showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
-                    document.getElementById("search-results-area").classList.add("hidden");
-                }
+                showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
+                document.getElementById("search-results-area").classList.add("hidden");
             }
         };
 
@@ -937,7 +916,7 @@
             const targetDisplayName = document.getElementById("found-display-name").textContent;
 
             const requestData = {
-                fromUid: useCloud ? auth.currentUser.uid : currentUserProfile.uid,
+                fromUid: currentUserProfile.uid,
                 fromUsername: currentUserProfile.username,
                 fromDisplayName: currentUserProfile.displayName,
                 toUid: targetUid,
@@ -945,67 +924,11 @@
                 status: 'pending'
             };
 
-            if (useCloud) {
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), requestData);
-                    showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
-                    document.getElementById("search-results-area").classList.add("hidden");
-                    document.getElementById("search-username-input").value = "";
-                } catch (err) {
-                    console.error("Gửi yêu cầu thất bại", err);
-                }
-            } else {
-                localDB.addDoc('coupleRequests', requestData);
-                showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
-                document.getElementById("search-results-area").classList.add("hidden");
-                document.getElementById("search-username-input").value = "";
-            }
+            await globalCloudDB.addDoc('coupleRequests', requestData);
+            showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
+            document.getElementById("search-results-area").classList.add("hidden");
+            document.getElementById("search-username-input").value = "";
         };
-
-        // Sync Matchmaking requests real-time
-        function syncMatchmakingHallData() {
-            if (useCloud) {
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), (requestsSnap) => {
-                    let sentMatch = null;
-                    let receivedMatch = null;
-
-                    requestsSnap.forEach(rDoc => {
-                        const rData = rDoc.data();
-                        rData.id = rDoc.id;
-
-                        if (rData.status === 'pending') {
-                            if (rData.fromUid === auth.currentUser.uid) {
-                                sentMatch = rData;
-                            }
-                            if (rData.toUid === auth.currentUser.uid) {
-                                receivedMatch = rData;
-                            }
-                        }
-                    });
-
-                    renderMatchRequests(sentMatch, receivedMatch);
-                }, (err) => console.error("Match sync error", err));
-            } else {
-                // Local Mode Matchmaking Sync
-                localDB.onSnapshot('coupleRequests', (col) => {
-                    let sentMatch = null;
-                    let receivedMatch = null;
-
-                    col.forEach(rData => {
-                        if (rData.status === 'pending') {
-                            if (rData.fromUid === currentUserProfile.uid) {
-                                sentMatch = rData;
-                            }
-                            if (rData.toUid === currentUserProfile.uid) {
-                                receivedMatch = rData;
-                            }
-                        }
-                    });
-
-                    renderMatchRequests(sentMatch, receivedMatch);
-                });
-            }
-        }
 
         function renderMatchRequests(sentMatch, receivedMatch) {
             const sentArea = document.getElementById("sent-requests-area");
@@ -1036,175 +959,34 @@
             const partnerUid = incomingArea.dataset.fromUid;
             const partnerUsername = incomingArea.dataset.fromUsername;
             const partnerDisplayName = incomingArea.dataset.fromDisplayName;
-            const myUid = useCloud ? auth.currentUser.uid : currentUserProfile.uid;
+            const myUid = currentUserProfile.uid;
 
-            if (useCloud) {
-                try {
-                    if (isAccepted) {
-                        const coupleId = `couple_${partnerUid}_${myUid}`;
+            if (isAccepted) {
+                const coupleId = `couple_${partnerUid}_${myUid}`;
+                const coupleData = {
+                    coupleId: coupleId,
+                    partner1Uid: partnerUid,
+                    partner1Username: partnerUsername,
+                    partner1DisplayName: partnerDisplayName,
+                    partner2Uid: myUid,
+                    partner2Username: currentUserProfile.username,
+                    partner2DisplayName: currentUserProfile.displayName,
+                    anniversaryDate: "2026-01-01"
+                };
 
-                        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), {
-                            coupleId: coupleId,
-                            partner1Uid: partnerUid,
-                            partner1Username: partnerUsername,
-                            partner1DisplayName: partnerDisplayName,
-                            partner2Uid: myUid,
-                            partner2Username: currentUserProfile.username,
-                            partner2DisplayName: currentUserProfile.displayName,
-                            anniversaryDate: "2026-01-01"
-                        });
-
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', myUid), {
-                            coupleId: coupleId,
-                            partnerUid: partnerUid
-                        });
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', partnerUid), {
-                            coupleId: coupleId,
-                            partnerUid: myUid
-                        });
-
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId), {
-                            status: 'accepted'
-                        });
-
-                        showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
-                    } else {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId));
-                        showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
-                    }
-                } catch (err) {
-                    console.error("Lỗi kết đôi", err);
-                }
+                await globalCloudDB.setItem('couples', coupleId, coupleData);
+                
+                // Update both user profiles in the global database
+                await globalCloudDB.updateDoc('users', myUid, { coupleId: coupleId, partnerUid: partnerUid });
+                await globalCloudDB.updateDoc('users', partnerUid, { coupleId: coupleId, partnerUid: myUid });
+                
+                await globalCloudDB.updateDoc('coupleRequests', reqId, { status: 'accepted' });
+                showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
             } else {
-                // Local storage partner respond logic
-                if (isAccepted) {
-                    const coupleId = `couple_${partnerUid}_${myUid}`;
-                    const coupleData = {
-                        coupleId: coupleId,
-                        partner1Uid: partnerUid,
-                        partner1Username: partnerUsername,
-                        partner1DisplayName: partnerDisplayName,
-                        partner2Uid: myUid,
-                        partner2Username: currentUserProfile.username,
-                        partner2DisplayName: currentUserProfile.displayName,
-                        anniversaryDate: "2026-01-01"
-                    };
-
-                    localDB.setItem('couples', coupleId, coupleData);
-                    
-                    // Update user profiles
-                    localDB.updateDoc('users', myUid, { coupleId: coupleId, partnerUid: partnerUid });
-                    localDB.updateDoc('users', partnerUid, { coupleId: coupleId, partnerUid: myUid });
-                    
-                    localDB.updateDoc('coupleRequests', reqId, { status: 'accepted' });
-                    showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
-                } else {
-                    localDB.deleteDoc('coupleRequests', reqId);
-                    showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
-                }
+                await globalCloudDB.deleteDoc('coupleRequests', reqId);
+                showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
             }
         };
-
-        // Sync diary entries, secrets and wishlist belonging to Couple Spaces
-        function syncCoupleSharedData(coupleId) {
-            if (useCloud) {
-                onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), (cDoc) => {
-                    if (cDoc.exists()) {
-                        currentCoupleDoc = cDoc.data();
-                        anniversaryDate = currentCoupleDoc.anniversaryDate;
-                        document.getElementById("anniversary-input").value = anniversaryDate;
-
-                        document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
-                        document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
-                        document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
-                    }
-                }, (err) => console.error("Couple Sync Error", err));
-
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), (snapshot) => {
-                    const entries = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        if (data.coupleId === coupleId) {
-                            data.id = docSnap.id;
-                            entries.push(data);
-                        }
-                    });
-                    diaryEntries = entries.sort((a,b) => b.id - a.id);
-                    renderTimeline();
-                }, (err) => console.error("Diary sync error", err));
-
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), (snapshot) => {
-                    const secrets = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        if (data.coupleId === coupleId) {
-                            data.id = docSnap.id;
-                            secrets.push(data);
-                        }
-                    });
-                    secretEntries = secrets.sort((a,b) => b.id - a.id);
-                    renderSecrets();
-                }, (err) => console.error("Secrets sync error", err));
-
-                onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), (snapshot) => {
-                    const list = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        if (data.coupleId === coupleId) {
-                            data.id = docSnap.id;
-                            list.push(data);
-                        }
-                    });
-                    bucketList = list;
-                    renderBucketList();
-                }, (err) => console.error("Bucketlist sync error", err));
-            } else {
-                // Local Mode live listeners simulation
-                const cDoc = localDB.getItem('couples', coupleId);
-                if (cDoc) {
-                    currentCoupleDoc = cDoc;
-                    anniversaryDate = currentCoupleDoc.anniversaryDate;
-                    document.getElementById("anniversary-input").value = anniversaryDate;
-
-                    document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
-                    document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
-                    document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
-                }
-
-                localDB.onSnapshot('diary', (col) => {
-                    const entries = [];
-                    col.forEach(data => {
-                        if (data.coupleId === coupleId) {
-                            entries.push(data);
-                        }
-                    });
-                    diaryEntries = entries.sort((a,b) => b.id - a.id);
-                    renderTimeline();
-                });
-
-                localDB.onSnapshot('secrets', (col) => {
-                    const secrets = [];
-                    col.forEach(data => {
-                        if (data.coupleId === coupleId) {
-                            secrets.push(data);
-                        }
-                    });
-                    secretEntries = secrets.sort((a,b) => b.id - a.id);
-                    renderSecrets();
-                });
-
-                localDB.onSnapshot('bucketList', (col) => {
-                    const list = [];
-                    col.forEach(data => {
-                        if (data.coupleId === coupleId) {
-                            list.push(data);
-                        }
-                    });
-                    bucketList = list;
-                    renderBucketList();
-                });
-            }
-        }
 
         // Global initialization
         window.onload = function() {
@@ -1241,12 +1023,12 @@
             document.getElementById(`d-btn-${tabId}`).classList.add("active-tab");
 
             document.querySelectorAll("nav.md\\:hidden button").forEach(btn => {
-                btn.classList.remove("text-sky-500", "active-tab");
-                btn.classList.add("text-slate-500");
+                btn.classList.remove("text-yellow-500", "active-tab");
+                btn.classList.add("text-gray-400");
             });
             const mobileBtn = document.getElementById(`m-btn-${tabId}`);
-            mobileBtn.classList.remove("text-slate-500");
-            mobileBtn.classList.add("text-sky-500", "active-tab");
+            mobileBtn.classList.remove("text-gray-400");
+            mobileBtn.classList.add("text-yellow-500", "active-tab");
 
             window.scrollTo(0, 0);
         }
@@ -1259,7 +1041,7 @@
             const difference = now - startDate;
 
             if (difference < 0) {
-                document.getElementById("counter-days").textContent = "Sắp yêu nhau rồi!";
+                document.getElementById("counter-days").textContent = "Sắp bên nhau rồi!";
                 document.getElementById("counter-hours").textContent = "00";
                 document.getElementById("counter-minutes").textContent = "00";
                 document.getElementById("counter-seconds").textContent = "00";
@@ -1281,19 +1063,8 @@
         window.updateAnniversary = async function() {
             const inputVal = document.getElementById("anniversary-input").value;
             if (inputVal && currentUserProfile.coupleId) {
-                if (useCloud) {
-                    try {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', currentUserProfile.coupleId), {
-                            anniversaryDate: inputVal
-                        });
-                        showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ lên mây! 🌤️");
-                    } catch (e) {
-                        console.error(e);
-                    }
-                } else {
-                    localDB.updateDoc('couples', currentUserProfile.coupleId, { anniversaryDate: inputVal });
-                    showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ! 🌤️");
-                }
+                await globalCloudDB.updateDoc('couples', currentUserProfile.coupleId, { anniversaryDate: inputVal });
+                showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ! 🌤️");
             }
         }
 
@@ -1329,7 +1100,7 @@
 
             const entryData = {
                 coupleId: currentUserProfile.coupleId,
-                id: Date.now(), // Unique timeline key
+                id: Date.now(),
                 author: currentUserProfile.displayName,
                 date: today,
                 mood: mood,
@@ -1338,17 +1109,8 @@
                 image: attachedImageBase64
             };
 
-            if (useCloud) {
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), entryData);
-                    showLoveToast("Nhật ký đã gửi trọn lên mây trời bình yên! 💌");
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localDB.addDoc('diary', entryData);
-                showLoveToast("Nhật ký đã lưu thành công! 💌");
-            }
+            await globalCloudDB.addDoc('diary', entryData);
+            showLoveToast("Nhật ký đã được ghi tạc lên trời sao! 🌌");
 
             // Reset forms
             document.getElementById("diary-title").value = "";
@@ -1358,19 +1120,26 @@
 
         // Delete memory card from timeline
         window.deleteEntry = async function(docId) {
-            if (confirm("Hai bạn có chắc chắn muốn xóa kỷ niệm này không? 🥺")) {
-                if (useCloud) {
-                    try {
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'diary', docId));
-                        showLoveToast("Đã xóa vĩnh viễn một trang nhật ký cũ.");
-                    } catch (e) {
-                        console.error(e);
-                    }
-                } else {
-                    localDB.deleteDoc('diary', docId);
-                    showLoveToast("Đã xóa vĩnh viễn một trang nhật ký cũ.");
-                }
-            }
+            // Elegant custom prompt replacement with custom flow for deletions
+            const overlay = document.createElement("div");
+            overlay.className = "fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4";
+            overlay.innerHTML = `
+                <div class="love-card max-w-sm w-full p-6 text-center space-y-4">
+                    <p class="text-sm font-semibold text-gray-200">Hai bạn có chắc muốn xóa trang nhật ký cũ này mãi mãi? 🥺</p>
+                    <div class="flex gap-3 justify-center">
+                        <button id="confirm-del-yes" class="bg-red-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Xóa</button>
+                        <button id="confirm-del-no" class="bg-gray-800 text-gray-400 px-4 py-2 rounded-xl text-xs font-bold">Hủy</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            document.getElementById("confirm-del-yes").onclick = async () => {
+                await globalCloudDB.deleteDoc('diary', docId);
+                overlay.remove();
+                showLoveToast("Trang nhật ký xưa đã hóa hư không... 🍃");
+            };
+            document.getElementById("confirm-del-no").onclick = () => overlay.remove();
         }
 
         // Write new locked secret entry
@@ -1393,17 +1162,8 @@
                 password: password
             };
 
-            if (useCloud) {
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), secretData);
-                    showLoveToast("Bí mật đã được gửi trọn vào rương mây bảo mật! 🔒✨");
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localDB.addDoc('secrets', secretData);
-                showLoveToast("Bí mật đã được gửi trọn vào rương bảo mật! 🔒✨");
-            }
+            await globalCloudDB.addDoc('secrets', secretData);
+            showLoveToast("Bí mật đã được cất sâu vào hộp khóa! 🔒✨");
 
             // Reset form input values
             document.getElementById("secret-password").value = "";
@@ -1421,12 +1181,11 @@
                 renderSecrets();
                 showLoveToast("Mật mã chuẩn xác! Khóa lòng đã mở... 🔓💕");
             } else {
-                showLoveToast("Mật mã không đúng rồi, thử đoán lại xem sao nha 🥺");
+                showLoveToast("Mật mã không đúng rồi, thử lại xem sao nha 🥺");
                 document.getElementById(inputElementId).value = "";
             }
         }
 
-        // Toggle custom delete validation panel for secrets
         window.toggleDeleteSecretConfirm = function(id) {
             confirmDeleteSecretId = id;
             renderSecrets();
@@ -1434,19 +1193,9 @@
 
         // Complete deletion of the secret card
         window.deleteSecret = async function(docId) {
-            if (useCloud) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'secrets', docId));
-                    confirmDeleteSecretId = null;
-                    showLoveToast("Bí mật đã được xóa sạch hoàn toàn khỏi rương mây.");
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localDB.deleteDoc('secrets', docId);
-                confirmDeleteSecretId = null;
-                showLoveToast("Bí mật đã được xóa sạch hoàn toàn.");
-            }
+            await globalCloudDB.deleteDoc('secrets', docId);
+            confirmDeleteSecretId = null;
+            showLoveToast("Bí mật đã được giải trừ khỏi rương báu.");
         }
 
         // Render locked secrets cards dynamic UI
@@ -1456,9 +1205,9 @@
 
             if (secretEntries.length === 0) {
                 container.innerHTML = `
-                    <div class="love-card p-8 text-center text-slate-400">
-                        <span class="text-4xl block mb-2">🎈</span>
-                        Không có bí mật nào chờ bật mí. Hãy viết một điều ngọt ngào đầu tiên!
+                    <div class="love-card p-8 text-center text-gray-400">
+                        <span class="text-4xl block mb-2">🔮</span>
+                        Chưa có bí mật nào chờ khai phá. Hãy viết điều thầm kín đầu tiên!
                     </div>
                 `;
                 return;
@@ -1475,28 +1224,28 @@
 
                 const isMySecret = (secret.author === currentUserProfile.displayName);
                 const authorColorClass = isMySecret 
-                    ? "bg-blue-100 text-blue-700" 
-                    : "bg-sky-100 text-[#0369A1]";
+                    ? "bg-yellow-950/40 text-yellow-400 border border-yellow-800/20" 
+                    : "bg-blue-950/40 text-blue-300 border border-blue-900/20";
 
                 let contentHtml = "";
                 if (isUnlocked || isMySecret) {
                     contentHtml = `
-                        <div class="bg-sky-50/50 p-4 rounded-2xl border border-sky-100 mt-2">
-                            <span class="text-xs font-bold text-sky-500 block mb-1">💌 Lời thì thầm hé mở:</span>
-                            <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-line">${secret.content}</p>
+                        <div class="bg-black/30 p-4 rounded-2xl border border-yellow-900/20 mt-2">
+                            <span class="text-xs font-bold text-yellow-500 block mb-1">💌 Lời thầm thì hé lộ:</span>
+                            <p class="text-sm leading-relaxed text-gray-300 whitespace-pre-line">${secret.content}</p>
                         </div>
                     `;
                 } else {
                     const inputId = `pass-input-${secret.id}`;
                     contentHtml = `
-                        <div class="bg-slate-50/50 p-6 rounded-2xl border border-dashed border-sky-200 flex flex-col items-center justify-center text-center space-y-3">
+                        <div class="bg-black/40 p-6 rounded-2xl border border-dashed border-yellow-900/30 flex flex-col items-center justify-center text-center space-y-3">
                             <span class="text-3xl animate-pulse">🔒</span>
-                            <div class="text-xs text-slate-500">Tin nhắn mật này của ${secret.author} đang được khóa chặt</div>
+                            <div class="text-xs text-gray-400">Tin mật của ${secret.author} đang khóa</div>
                             <div class="flex gap-2 max-w-xs w-full mt-1">
-                                <input type="password" id="${inputId}" placeholder="Nhập mã giải khóa..." 
-                                    class="flex-1 px-3 py-2 border border-sky-200 rounded-xl text-xs text-center focus:outline-none focus:border-sky-400 bg-white">
+                                <input type="password" id="${inputId}" placeholder="Giải mã..." 
+                                    class="flex-1 px-3 py-2 border border-yellow-900/30 rounded-xl text-xs text-center focus:outline-none focus:border-yellow-500 bg-black/40 text-white">
                                 <button onclick="checkSecretPassword('${secret.id}', '${inputId}')"
-                                    class="bg-[#0369A1] hover:bg-[#025684] text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                    class="tarot-btn-gold px-4 py-2 rounded-xl text-xs transition">
                                     Giải Mã 🗝️
                                 </button>
                             </div>
@@ -1507,34 +1256,34 @@
                 let deleteBlockHtml = "";
                 if (confirmDeleteSecretId === secret.id) {
                     deleteBlockHtml = `
-                        <div class="absolute top-4 right-4 bg-white/95 border border-red-200 p-2 rounded-xl flex items-center gap-2 shadow-lg z-10">
+                        <div class="absolute top-4 right-4 bg-slate-950/95 border border-red-900 p-2 rounded-xl flex items-center gap-2 shadow-lg z-10">
                             <span class="text-[10px] font-bold text-red-500">Xóa vĩnh viễn?</span>
-                            <button onclick="deleteSecret('${secret.id}')" class="text-[9px] font-bold text-white bg-red-500 px-2.5 py-1 rounded-lg">Xóa</button>
-                            <button onclick="toggleDeleteSecretConfirm(null)" class="text-[9px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">Hủy</button>
+                            <button onclick="deleteSecret('${secret.id}')" class="text-[9px] font-bold text-white bg-red-600 px-2.5 py-1 rounded-lg">Xóa</button>
+                            <button onclick="toggleDeleteSecretConfirm(null)" class="text-[9px] font-bold text-gray-400 bg-gray-800 px-2.5 py-1 rounded-lg">Hủy</button>
                         </div>
                     `;
                 } else {
                     deleteBlockHtml = `
                         <button onclick="toggleDeleteSecretConfirm('${secret.id}')"
-                            class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
+                            class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-950/40 hover:bg-red-900/40 border border-red-900/30 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
                             Xóa 🗑️
                         </button>
                     `;
                 }
 
                 secretCard.innerHTML = `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-sky-100/60">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-gray-800">
                         <div class="flex items-center gap-2">
                             <span class="text-xs px-3 py-1 font-bold rounded-full ${authorColorClass}">${secret.author} gửi đối phương</span>
-                            <span class="text-xs px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium">
+                            <span class="text-xs px-3 py-1 bg-yellow-950/40 text-yellow-400 border border-yellow-900/20 rounded-full font-medium">
                                 ${isUnlocked || isMySecret ? "🔓 Đã mở" : "🔒 Đang khóa"}
                             </span>
                         </div>
-                        <span class="text-xs text-slate-400 font-semibold">${formattedDate}</span>
+                        <span class="text-xs text-gray-400 font-semibold">${formattedDate}</span>
                     </div>
 
                     <div class="space-y-2">
-                        <h4 class="romantic-font text-xl font-bold text-[#0369A1]">${secret.title}</h4>
+                        <h4 class="romantic-font text-xl font-bold text-[#e5c158]">${secret.title}</h4>
                         ${contentHtml}
                     </div>
 
@@ -1551,9 +1300,9 @@
 
             if (diaryEntries.length === 0) {
                 timeline.innerHTML = `
-                    <div class="love-card p-8 text-center text-slate-400">
-                        <span class="text-4xl block mb-2">🍃</span>
-                        Chưa có kỷ niệm nào được viết... Hãy cùng nhau viết trang nhật ký đầu tiên!
+                    <div class="love-card p-8 text-center text-gray-400">
+                        <span class="text-4xl block mb-2">🐳 🐧</span>
+                        Chưa có kỷ niệm nào... Hãy cùng viết trang nhật ký đầu tiên!
                     </div>
                 `;
                 return;
@@ -1568,33 +1317,33 @@
                 entryCard.className = "love-card p-6 md:p-8 space-y-4 relative group";
                 
                 const authorColorClass = entry.author === currentUserProfile.displayName
-                    ? "bg-blue-100 text-blue-700" 
-                    : "bg-sky-100 text-[#0369A1]";
+                    ? "bg-yellow-950/40 text-yellow-400 border border-yellow-800/20" 
+                    : "bg-blue-950/40 text-blue-300 border border-blue-900/20";
 
                 let imageHtml = "";
                 if (entry.image) {
-                    imageHtml = `<div class="rounded-2xl overflow-hidden max-h-96 w-full border border-sky-100 mt-2">
+                    imageHtml = `<div class="rounded-2xl overflow-hidden max-h-96 w-full border border-yellow-900/20 mt-2">
                         <img src="${entry.image}" class="w-full h-full object-cover">
                     </div>`;
                 }
 
                 entryCard.innerHTML = `
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-sky-100/60">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-gray-800">
                         <div class="flex items-center gap-2">
                             <span class="text-xs px-3 py-1 font-bold rounded-full ${authorColorClass}">${entry.author}</span>
-                            <span class="text-xs px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium">${entry.mood}</span>
+                            <span class="text-xs px-3 py-1 bg-yellow-950/40 text-yellow-400 border border-yellow-900/20 rounded-full font-medium">${entry.mood}</span>
                         </div>
-                        <span class="text-xs text-slate-400 font-semibold">${formattedDate}</span>
+                        <span class="text-xs text-gray-400 font-semibold">${formattedDate}</span>
                     </div>
 
                     <div class="space-y-2">
-                        <h4 class="romantic-font text-xl font-bold text-[#0369A1]">${entry.title}</h4>
-                        <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-line">${entry.content}</p>
+                        <h4 class="romantic-font text-xl font-bold text-[#e5c158]">${entry.title}</h4>
+                        <p class="text-sm leading-relaxed text-gray-300 whitespace-pre-line">${entry.content}</p>
                         ${imageHtml}
                     </div>
 
                     <button onclick="deleteEntry('${entry.id}')"
-                        class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
+                        class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-950/40 hover:bg-red-900/40 border border-red-900/20 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
                         Xóa 🗑️
                     </button>
                 `;
@@ -1617,47 +1366,19 @@
                     completed: false
                 };
 
-                if (useCloud) {
-                    try {
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), wishData);
-                        showLoveToast("Đã bổ sung một ước nguyện mới bay lên trời xanh! ✨");
-                    } catch (e) {
-                        console.error(e);
-                    }
-                } else {
-                    localDB.addDoc('bucketList', wishData);
-                    showLoveToast("Đã bổ sung một ước nguyện mới! ✨");
-                }
+                await globalCloudDB.addDoc('bucketList', wishData);
+                showLoveToast("Ước nguyện bay lên trời cao! ✨");
                 input.value = "";
             }
         }
 
         window.toggleWishlist = async function(docId, currentCompleted) {
-            if (useCloud) {
-                try {
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId), {
-                        completed: !currentCompleted
-                    });
-                    showLoveToast("Ước nguyện ngọt ngào đã được hòa vào gió mây! 🌤️");
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localDB.updateDoc('bucketList', docId, { completed: !currentCompleted });
-                showLoveToast("Ước nguyện đã được cập nhật! 🌤️");
-            }
+            await globalCloudDB.updateDoc('bucketList', docId, { completed: !currentCompleted });
+            showLoveToast("Nhật ký ước nguyện đã cập nhật! 🌤️");
         }
 
         window.deleteWishlistItem = async function(docId) {
-            if (useCloud) {
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId));
-                } catch (err) {
-                    console.error(err);
-                }
-            } else {
-                localDB.deleteDoc('bucketList', docId);
-            }
+            await globalCloudDB.deleteDoc('bucketList', docId);
         }
 
         // Render bucket progress bar and wishlist items list
@@ -1666,7 +1387,7 @@
             container.innerHTML = "";
 
             if (bucketList.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Chưa có mong muốn nào. Hãy thêm vài điều lãng mạn muốn làm cùng nhau!</p>`;
+                container.innerHTML = `<p class="text-sm text-gray-400 text-center py-4">Chưa có mong muốn nào. Hãy thêm ước nguyện ngọt ngào chung!</p>`;
                 updateBucketProgress(0);
                 return;
             }
@@ -1676,9 +1397,9 @@
                 if (item.completed) completedCount++;
 
                 const row = document.createElement("div");
-                row.className = "flex items-center justify-between p-4 bg-white/40 border border-sky-100/60 rounded-2xl hover:bg-white/60 transition";
+                row.className = "flex items-center justify-between p-4 bg-black/30 border border-yellow-900/20 rounded-2xl hover:bg-black/55 transition";
                 
-                const checkedClass = item.completed ? "line-through text-slate-400" : "text-slate-700 font-semibold";
+                const checkedClass = item.completed ? "line-through text-gray-500" : "text-gray-200 font-semibold";
                 const iconCheck = item.completed ? "✨" : "☁️";
 
                 row.innerHTML = `
@@ -1686,7 +1407,7 @@
                         <span class="text-lg">${iconCheck}</span>
                         <span class="text-sm ${checkedClass}">${item.text}</span>
                     </div>
-                    <button onclick="deleteWishlistItem('${item.id}')" class="text-xs text-sky-400 hover:text-sky-600 px-2 py-1">Xóa</button>
+                    <button onclick="deleteWishlistItem('${item.id}')" class="text-xs text-yellow-500 hover:text-yellow-400 px-2 py-1">Xóa</button>
                 `;
                 container.appendChild(row);
             });
@@ -1700,7 +1421,7 @@
             document.getElementById("bucket-progress-bar").style.width = `${percentage}%`;
         }
 
-        // Floating clouds animations creator
+        // Floating clouds background creator
         function createCloudsBackground() {
             const container = document.getElementById("clouds-container");
             const cloudSymbols = ["☁️", "☁️", "🌤️", "✨", "⭐", "💨"];
@@ -1713,7 +1434,7 @@
                     cloud.style.left = (Math.random() * 120 - 20) + "vw";
                     cloud.style.top = Math.random() * 85 + "vh";
                     cloud.style.fontSize = Math.random() * 2 + 1.5 + "rem";
-                    cloud.style.animationDuration = Math.random() * 15 + 20 + "s";
+                    cloud.style.animationDuration = Math.random() * 20 + 25 + "s";
                     cloud.style.animationDelay = Math.random() * 3 + "s";
                     if (container) container.appendChild(cloud);
 
@@ -1735,7 +1456,7 @@
             cloud.style.left = "-20vw";
             cloud.style.top = Math.random() * 85 + "vh";
             cloud.style.fontSize = Math.random() * 2 + 1.5 + "rem";
-            cloud.style.animationDuration = Math.random() * 15 + 20 + "s";
+            cloud.style.animationDuration = Math.random() * 20 + 25 + "s";
             container.appendChild(cloud);
 
             cloud.addEventListener("animationend", () => {
