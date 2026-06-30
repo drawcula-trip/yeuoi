@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YÊU ƠI</title>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght=0,400..900;1,400..900&family=Quicksand:wght=300..700&display=swap');
+        
+        :root {
+            --cloud-blue: #F0F9FF;
+            --sky-accent: #0EA5E9;
+            --deep-blue: #0369A1;
+            --gold-accent: #F59E0B;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            color: #4A4A4A;
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .romantic-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Glassmorphism styles */
+        .love-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(14, 165, 233, 0.15);
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .love-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(14, 165, 233, 0.1);
+        }
+
+        /* Floating clouds styling */
+        .cloud-bubble {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.9);
+            pointer-events: none;
+            filter: drop-shadow(0 4px 6px rgba(14, 165, 233, 0.1));
+            animation: driftHorizontal 30s linear infinite;
+        }
+
+        @keyframes driftHorizontal {
+            0% {
+                transform: translateX(-20vw) translateY(0) scale(0.6);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.85;
+            }
+            90% {
+                opacity: 0.85;
+            }
+            100% {
+                transform: translateX(110vw) translateY(-20px) scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        /* Custom scrollbar for beautiful elements */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(14, 165, 233, 0.3);
+            border-radius: 10px;
+        }
+
+        .active-tab {
+            color: var(--sky-accent);
+            background: rgba(14, 165, 233, 0.1);
+            border-radius: 1rem;
+        }
+
+        .auth-tab-active {
+            border-bottom: 3px solid var(--sky-accent);
+            color: var(--deep-blue);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between min-h-screen pb-24 md:pb-6">
+
+    <!-- Floating Clouds Background Container -->
+    <div id="clouds-container" class="fixed inset-0 pointer-events-none z-0 overflow-hidden"></div>
+
+    <!-- Screen 1: Real-time Database Initializing & Loading -->
+    <div id="loading-screen" class="fixed inset-0 z-50 bg-[#F0F9FF] flex flex-col items-center justify-center p-6">
+        <div class="love-card max-w-sm w-full p-8 text-center space-y-6">
+            <span class="text-6xl animate-bounce block">☁️</span>
+            <h1 class="romantic-font text-3xl font-bold text-[#0369A1]">YÊU ƠI</h1>
+            <p class="text-sm text-slate-500 animate-pulse">Đang định hình tinh cầu tình yêu...</p>
+        </div>
+    </div>
+
+    <!-- Screen 2: Unified Auth Screen (Đăng nhập / Đăng ký) -->
+    <div id="auth-screen" class="fixed inset-0 z-40 bg-[#F0F9FF] hidden flex-col items-center justify-center p-6 overflow-y-auto">
+        <div class="love-card max-w-sm w-full p-6 md:p-8 space-y-6">
+            <div class="text-center">
+                <span class="text-5xl block mb-2">🏰</span>
+                <h1 class="romantic-font text-2xl font-bold text-[#0369A1]">YÊU ƠI</h1>
+                <p class="text-xs text-slate-500 mt-1">Sở hữu một hộ chiếu mây xanh để cùng nhau ghi dấu kỷ niệm</p>
+            </div>
+
+            <!-- Auth Tabs Selector -->
+            <div class="flex border-b border-sky-100 text-sm">
+                <button onclick="switchAuthTab('login')" id="tab-btn-login" class="flex-1 py-2 text-center text-slate-400 auth-tab-active">
+                    Đăng Nhập 🔑
+                </button>
+                <button onclick="switchAuthTab('register')" id="tab-btn-register" class="flex-1 py-2 text-center text-slate-400">
+                    Đăng Ký ✨
+                </button>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="view-login" class="space-y-4">
+                <div class="space-y-3">
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-sky-500 font-bold text-sm">@</span>
+                        <input type="text" id="login-username" placeholder="biethieucuaban" 
+                            class="w-full pl-9 pr-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-bold text-sm">
+                    </div>
+                    <input type="password" id="login-password" placeholder="Mật khẩu của bạn" 
+                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                </div>
+                <button onclick="loginWithCloud()" 
+                    class="w-full py-3 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-lg transition duration-200 text-sm">
+                    Mở Cửa Lâu Đài 🗝️
+                </button>
+            </div>
+
+            <!-- REGISTER VIEW -->
+            <div id="view-register" class="space-y-4 hidden">
+                <div class="space-y-3">
+                    <div class="relative">
+                        <span class="absolute left-4 top-3.5 text-sky-500 font-bold text-sm">@</span>
+                        <input type="text" id="register-username" placeholder="biethieudocnhat" 
+                            class="w-full pl-9 pr-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-bold text-sm">
+                    </div>
+                    <input type="text" id="register-display-name" placeholder="Tên hiển thị ngọt ngào (Ví dụ: Huy, Nhi)" 
+                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                    <input type="password" id="register-password" placeholder="Tạo mật khẩu (Tối thiểu 6 ký tự)" 
+                        class="w-full px-4 py-3 border-2 border-sky-100 rounded-2xl focus:outline-none focus:border-sky-400 bg-white/50 text-[#0369A1] font-semibold text-sm">
+                </div>
+                <button onclick="registerUserCloud()" 
+                    class="w-full py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-bold rounded-2xl shadow-lg transition duration-200 text-sm">
+                    Cấp Hộ Chiếu Mới ⛅
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 3: Matchmaking Hall (Sảnh Kết Tơ Duyên) -->
+    <div id="matching-screen" class="fixed inset-0 z-30 bg-[#F0F9FF] hidden flex-col items-center justify-center p-6 overflow-y-auto">
+        <div class="love-card max-w-md w-full p-6 md:p-8 space-y-6">
+            <div class="text-center space-y-2 relative">
+                <!-- Mini Log out inside Matchmaking for safety -->
+                <button onclick="logoutCloud()" class="absolute top-0 right-0 text-xs font-bold text-slate-400 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition">Đăng xuất</button>
+                <span class="text-5xl block">✨</span>
+                <h1 class="romantic-font text-2xl font-bold text-[#0369A1]">Sảnh Kết Tơ Duyên</h1>
+                <p class="text-xs text-slate-500">Tìm kiếm nửa kia của bạn bằng biệt hiệu độc nhất để bước vào lâu đài</p>
+                <div class="inline-block bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold">
+                    Biệt hiệu của bạn: <span id="my-badge-username">@loading</span>
+                </div>
+            </div>
+
+            <!-- Search Area -->
+            <div class="space-y-3 pt-2">
+                <div class="flex gap-2">
+                    <input type="text" id="search-username-input" placeholder="Nhập biệt hiệu đối phương..." 
+                        class="flex-1 px-4 py-2 border-2 border-sky-100 rounded-xl focus:outline-none focus:border-sky-400 bg-white text-sm">
+                    <button onclick="searchPartnerCloud()" class="bg-[#0369A1] hover:bg-[#025684] text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                        Tìm 🔍
+                    </button>
+                </div>
+                <!-- Search Results -->
+                <div id="search-results-area" class="space-y-2 hidden">
+                    <p class="text-[10px] uppercase font-bold text-slate-400">Kết quả tìm kiếm</p>
+                    <div id="search-result-card" class="flex items-center justify-between p-3 bg-sky-50 border border-sky-200 rounded-xl">
+                        <div>
+                            <span class="text-xs font-bold text-[#0369A1] block" id="found-display-name">Nhi</span>
+                            <span class="text-[10px] text-slate-400" id="found-username">@nhi99</span>
+                        </div>
+                        <button onclick="sendLoveRequestCloud()" class="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition shadow">
+                            Ngừi iu tui đóa 💖
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Sent Requests -->
+            <div id="sent-requests-area" class="hidden border-t border-sky-100 pt-4 space-y-2">
+                <p class="text-[10px] uppercase font-bold text-slate-400">Lời tỏ tình đã gửi</p>
+                <div class="p-3 bg-white/50 border border-dashed border-sky-200 rounded-xl text-center text-xs text-slate-500">
+                    Đang đợi <span id="sent-request-partner" class="font-bold"></span> gật đầu chấp thuận... ☁️
+                </div>
+            </div>
+
+            <!-- Incoming Match Requests Modal Box -->
+            <div id="incoming-requests-area" class="hidden border-t border-sky-100 pt-4 space-y-3">
+                <p class="text-[10px] uppercase font-bold text-rose-400 animate-pulse">Có ai đó vừa gửi tín hiệu yêu thương!</p>
+                <div class="p-4 bg-rose-50/50 border border-rose-200 rounded-xl space-y-3 text-center">
+                    <p class="text-xs text-slate-600"><span id="incoming-sender-name" class="font-bold text-rose-500">Ai đó</span> bảo bạn là người yêu của họ kìa!</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="respondLoveRequestCloud(true)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 rounded-lg text-xs transition">
+                            Đúm 👍
+                        </button>
+                        <button onclick="respondLoveRequestCloud(false)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 rounded-lg text-xs transition">
+                            Khôm 👎
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WORKSPACE (ACTIVATED ONCE COUPLED) -->
+    <div id="app-content" class="hidden flex-1 flex flex-col md:flex-row max-w-6xl w-full mx-auto p-4 gap-6 z-10">
+        
+        <!-- Left Column: Love Stats & Controls (Sticky on Desktop) -->
+        <aside class="w-full md:w-80 flex flex-col gap-6 md:sticky md:top-6 md:h-[calc(100vh-3rem)]">
+            
+            <!-- Couple Header Profile Card -->
+            <div class="love-card p-6 text-center relative overflow-hidden">
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <div class="relative">
+                        <span class="text-4xl" id="partner1-avatar">👦</span>
+                        <div id="partner1-name-display" class="block w-20 text-center text-xs font-bold text-[#0369A1] mt-1">Bạn</div>
+                    </div>
+                    <span class="text-2xl text-sky-500 animate-pulse">☁️</span>
+                    <div class="relative">
+                        <span class="text-4xl" id="partner2-avatar">👧</span>
+                        <div id="partner2-name-display" class="block w-20 text-center text-xs font-bold text-[#0369A1] mt-1">Đang chờ</div>
+                    </div>
+                </div>
+                <h2 class="romantic-font text-2xl font-bold text-[#0369A1]" id="couple-title">YÊU ƠI</h2>
+                <div class="mt-2 flex items-center justify-center gap-1.5">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mr-2">Đồng bộ đám mây</span>
+                    <button onclick="logoutCloud()" class="text-[9px] font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded transition">Đăng xuất</button>
+                </div>
+            </div>
+
+            <!-- Love Counter Widget -->
+            <div class="love-card p-6 bg-gradient-to-br from-blue-500 to-sky-400 text-white text-center shadow-blue-200">
+                <span class="text-xs font-bold uppercase tracking-widest opacity-80 block mb-2">Đã bên nhau được</span>
+                <div class="text-4xl font-extrabold romantic-font mb-4 drop-shadow-md" id="counter-days">0 ngày</div>
+                
+                <!-- Detail counter grids -->
+                <div class="grid grid-cols-3 gap-2 text-center bg-white/10 rounded-2xl p-3 backdrop-blur-sm">
+                    <div>
+                        <span class="text-lg font-bold block" id="counter-hours">00</span>
+                        <span class="text-[9px] uppercase tracking-wider opacity-80">Giờ</span>
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold block" id="counter-minutes">00</span>
+                        <span class="text-[9px] uppercase tracking-wider opacity-80">Phút</span>
+                    </div>
+                    <div>
+                        <span class="text-lg font-bold block" id="counter-seconds">00</span>
+                        <span class="text-[9px] uppercase tracking-wider opacity-80">Giây</span>
+                    </div>
+                </div>
+
+                <!-- Custom Anniversary Date Setter -->
+                <div class="mt-4 pt-4 border-t border-white/20 flex flex-col gap-2">
+                    <label class="text-[10px] uppercase font-bold opacity-80">Ngày bắt đầu yêu:</label>
+                    <input type="date" id="anniversary-input" onchange="updateAnniversary()"
+                        class="bg-white/20 text-white border-0 rounded-xl px-3 py-1.5 text-center text-xs focus:outline-none focus:ring-1 focus:ring-white">
+                </div>
+            </div>
+
+            <!-- Desktop Tab Buttons (Hidden on Mobile bottom bar) -->
+            <nav class="hidden md:flex flex-col gap-2 love-card p-4">
+                <button onclick="switchTab('diary')" id="d-btn-diary" class="active-tab w-full text-left py-3 px-4 flex items-center gap-3 font-semibold transition">
+                    <span>📖</span> Nhật Ký Đôi
+                </button>
+                <button onclick="switchTab('secrets')" id="d-btn-secrets" class="w-full text-left py-3 px-4 flex items-center gap-3 font-semibold transition">
+                    <span>🤫</span> Bí Mật Chờ Bật Mí
+                </button>
+                <button onclick="switchTab('bucket')" id="d-btn-bucket" class="w-full text-left py-3 px-4 flex items-center gap-3 font-semibold transition">
+                    <span>✨</span> Nguyện Ước Chung
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Right Column: Interactive Content Sections -->
+        <main class="flex-1 flex flex-col gap-6">
+
+            <!-- SECTION 1: DIARY TIMELINE -->
+            <section id="sec-diary" class="space-y-6">
+                <!-- Add New Diary Entry Form -->
+                <div class="love-card p-6 md:p-8">
+                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-6 flex items-center gap-2">
+                        <span>✍️</span> Khắc Ghi Khoảnh Khắc Mới
+                    </h3>
+                    
+                    <form onsubmit="saveNewEntry(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 block mb-1">Người viết:</label>
+                                <input type="text" id="diary-author" disabled 
+                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none bg-sky-50 text-sky-700 font-bold">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 block mb-1">Tâm trạng hôm nay:</label>
+                                <select id="diary-mood" class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50">
+                                    <option value="☁️ Nhẹ nhõm">☁️ Nhẹ nhõm</option>
+                                    <option value="🌸 Bình yên">🌸 Bình yên</option>
+                                    <option value="🥺 Nhớ bạn kia">🥺 Nhớ bạn kia</option>
+                                    <option value="🍕 Đang đói, muốn đi ăn">🍕 Đang đói, muốn đi ăn</option>
+                                    <option value="💤 Cần một cái ôm">💤 Cần một cái ôm</option>
+                                    <option value="🧸 Rất đáng yêu">🧸 Rất đáng yêu</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Tiêu đề:</label>
+                            <input type="text" id="diary-title" required placeholder="Hôm nay chúng mình làm gì..."
+                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Dòng tâm sự:</label>
+                            <textarea id="diary-content" required placeholder="Viết những lời yêu thương hoặc ghi lại nhật ký ngày hôm nay..." rows="4"
+                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 leading-relaxed"></textarea>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-2">
+                            <!-- Image attachment preview & picker -->
+                            <div class="w-full sm:w-auto">
+                                <label class="cursor-pointer inline-flex items-center gap-2 bg-sky-100 hover:bg-sky-200 text-[#0369A1] px-4 py-2.5 rounded-xl text-xs font-bold transition">
+                                    <span>📸 Thêm ảnh kỷ niệm</span>
+                                    <input type="file" id="diary-image-picker" accept="image/*" onchange="previewImage(event)" class="hidden">
+                                </label>
+                                <div id="image-preview-container" class="hidden mt-2 relative w-16 h-16 rounded-xl overflow-hidden border border-sky-200">
+                                    <img id="image-preview" src="#" class="w-full h-full object-cover">
+                                    <button type="button" onclick="clearImagePreview()" class="absolute inset-0 bg-black/40 text-white text-[10px] font-bold flex items-center justify-center opacity-0 hover:opacity-100 transition">Xóa</button>
+                                </div>
+                            </div>
+
+                            <button type="submit" 
+                                class="w-full sm:w-auto bg-[#0369A1] hover:bg-[#025684] text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                                Đóng Dấu Kỷ Niệm 💌
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Diary Timeline Display -->
+                <div class="space-y-4">
+                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] flex items-center gap-2">
+                        <span>📜</span> Dòng Thời Gian Kỷ Niệm
+                    </h3>
+                    <div id="timeline" class="space-y-4">
+                        <!-- Entries will be dynamically injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION: BÍ MẬT CHỜ BẬT MÍ -->
+            <section id="sec-secrets" class="hidden space-y-6">
+                <div class="love-card p-6 md:p-8">
+                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-2 flex items-center gap-2">
+                        <span>🤫</span> Bí Mật Chờ Bật Mí
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-6">Viết những lời thầm kín, tạo mật mã riêng. Đối phương phải giải mã đúng mật mã mới đọc được tâm sự của bạn!</p>
+                    
+                    <form onsubmit="saveNewSecret(event)" class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 block mb-1">Người viết:</label>
+                                <input type="text" id="secret-author" disabled 
+                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none bg-sky-50 text-sky-700 font-bold">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 block mb-1">Thiết lập mật mã giải khóa:</label>
+                                <input type="text" id="secret-password" required placeholder="Nhập mật khẩu cho tin này..."
+                                    class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Gợi ý tiêu đề:</label>
+                            <input type="text" id="secret-title" required placeholder="Ví dụ: Kế hoạch đi chơi cuối tuần, Bí mật ngày sinh nhật..."
+                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 block mb-1">Dòng mật sự (Nội dung được ẩn):</label>
+                            <textarea id="secret-content" required placeholder="Nhập nội dung bí mật bạn muốn gửi gắm ở đây..." rows="4"
+                                class="w-full p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 leading-relaxed"></textarea>
+                        </div>
+
+                        <div class="flex justify-end pt-2">
+                            <button type="submit" 
+                                class="w-full sm:w-auto bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition">
+                                Gửi Bí Mật Vào Hộp Khóa 🔒
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="space-y-4">
+                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] flex items-center gap-2">
+                        <span>🗝️</span> Hộp Thư Bí Mật Đang Chờ
+                    </h3>
+                    <div id="secrets-timeline" class="space-y-4">
+                        <!-- Secrets will be dynamically injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 2: BUCKET LIST -->
+            <section id="sec-bucket" class="hidden space-y-6">
+                <div class="love-card p-6 md:p-8">
+                    <h3 class="romantic-font text-2xl font-bold text-[#0369A1] mb-2 flex items-center gap-2">
+                        <span>✨</span> Nguyện Ước Tình Yêu
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-6">Mỗi điều ước hoàn thành là một cột mốc kết nối hai trái tim lại gần nhau hơn.</p>
+                    
+                    <!-- Progress meter -->
+                    <div class="bg-sky-100/60 rounded-2xl p-4 border border-sky-200 mb-6">
+                        <div class="flex justify-between items-center text-xs font-bold mb-2">
+                            <span class="text-[#0369A1]">Tiến độ hành trình ước nguyện:</span>
+                            <span id="bucket-progress-text" class="text-sky-500">0%</span>
+                        </div>
+                        <div class="w-full h-3 bg-sky-200 rounded-full overflow-hidden">
+                            <div id="bucket-progress-bar" class="bg-gradient-to-r from-sky-400 to-blue-600 h-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Add wishlist item form -->
+                    <form onsubmit="addWishlistItem(event)" class="flex gap-2 mb-6">
+                        <input type="text" id="bucket-input" required placeholder="Thêm điều hai đứa muốn làm cùng nhau..."
+                            class="flex-1 p-3 border border-sky-200 rounded-xl focus:outline-none focus:border-sky-400 bg-white/50 font-semibold text-[#0369A1]">
+                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-6 rounded-xl transition">
+                            Thêm ✨
+                        </button>
+                    </form>
+
+                    <!-- Wishlist container -->
+                    <div id="bucket-list" class="space-y-3">
+                        <!-- Items injected dynamically -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-sky-100 backdrop-blur-md flex justify-around p-3 z-40">
+        <button onclick="switchTab('diary')" id="m-btn-diary" class="active-tab flex flex-col items-center gap-1 text-sky-500 px-2 py-2">
+            <span class="text-xl">📖</span><span class="text-[9px] font-bold">NHẬT KÝ</span>
+        </button>
+        <button onclick="switchTab('secrets')" id="m-btn-secrets" class="flex flex-col items-center gap-1 text-slate-500 px-2 py-2">
+            <span class="text-xl">🤫</span><span class="text-[9px] font-bold">BÍ MẬT</span>
+        </button>
+        <button onclick="switchTab('bucket')" id="m-btn-bucket" class="flex flex-col items-center gap-1 text-slate-500 px-2 py-2">
+            <span class="text-xl">✨</span><span class="text-[9px] font-bold">ƯỚC NGUYỆN</span>
+        </button>
+    </nav>
+
+    <!-- Custom Love letter toast notification -->
+    <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-[#0369A1] text-white px-6 py-3 rounded-full text-xs font-bold shadow-xl transition-all duration-300 transform translate-y-[-100px] opacity-0 flex items-center gap-2">
+        <span>☁️</span> <span id="toast-message">Thông điệp mây xanh!</span>
+    </div>
+
+    <!-- FIREBASE AND CORE APP ENGINE (Strict Firebase rule enforcement) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Application State Configurations
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lovers-diary-cloud';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "",
+            authDomain: "lovers-diary-cloud.firebaseapp.com",
+            projectId: "lovers-diary-cloud",
+            storageBucket: "lovers-diary-cloud.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
+
+        // Initialize Firebase SDK Elements
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) {
+            console.error("Lỗi cấu hình Firebase. Sử dụng môi trường ảo hóa", e);
+        }
+
+        // App States mapping
+        let currentUserProfile = null; 
+        let currentCoupleDoc = null;
+        let activeTabId = "diary";
+        let anniversaryDate = "2026-01-01";
+        let diaryEntries = [];
+        let secretEntries = [];
+        let bucketList = [];
+        let unlockedSecretIds = []; 
+        let confirmDeleteSecretId = null; 
+        let attachedImageBase64 = "";
+
+        // Authenticate User & Bind State Realtime Listener
+        async function runCloudAuth() {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // Check if they are logged in with anonymous credential (temporary for guest reads)
+                    if (user.isAnonymous) {
+                        // Keep them on the login/signup view
+                        document.getElementById("loading-screen").classList.add("hidden");
+                        document.getElementById("auth-screen").classList.remove("hidden");
+                        document.getElementById("app-content").classList.add("hidden");
+                        document.getElementById("matching-screen").classList.add("hidden");
+                        return;
+                    }
+
+                    // Authentic user session is active! Try to load user profile (Strict Path - RULE 1)
+                    const userProfileRef = doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid);
+                    try {
+                        const userSnap = await getDoc(userProfileRef);
+                        if (userSnap.exists()) {
+                            currentUserProfile = userSnap.data();
+                            document.getElementById("loading-screen").classList.add("hidden");
+                            document.getElementById("auth-screen").classList.add("hidden");
+                            runMainCloudSync(user.uid);
+                        } else {
+                            // Auth account exists but profile document doesn't (Force safe log out to resolve sync)
+                            await signOut(auth);
+                        }
+                    } catch (err) {
+                        console.error("Lỗi tải thông tin:", err);
+                        showLoveToast("Không thể đồng bộ hồ sơ mây.");
+                    }
+                } else {
+                    // Force a silent anonymous login FIRST so firestore reads can be done safely (RULE 3 compliance)
+                    try {
+                        await signInAnonymously(auth);
+                    } catch (e) {
+                        console.error("Anonymous authentication failed", e);
+                    }
+                }
+            });
+        }
+
+        // Switch custom authorization panels
+        window.switchAuthTab = function(type) {
+            document.getElementById("tab-btn-login").classList.remove("auth-tab-active");
+            document.getElementById("tab-btn-register").classList.remove("auth-tab-active");
+            document.getElementById("view-login").classList.add("hidden");
+            document.getElementById("view-register").classList.add("hidden");
+
+            if (type === 'login') {
+                document.getElementById("tab-btn-login").classList.add("auth-tab-active");
+                document.getElementById("view-login").classList.remove("hidden");
+            } else {
+                document.getElementById("tab-btn-register").classList.add("auth-tab-active");
+                document.getElementById("view-register").classList.remove("hidden");
+            }
+        }
+
+        // Register User Profile with Email/Password & Unique Username Check
+        window.registerUserCloud = async function() {
+            const rawUsername = document.getElementById("register-username").value.trim().toLowerCase();
+            const displayName = document.getElementById("register-display-name").value.trim();
+            const password = document.getElementById("register-password").value.trim();
+
+            if (!rawUsername || rawUsername.length < 3) {
+                showLoveToast("Biệt hiệu tối thiểu 3 kí tự bạn nhé!");
+                return;
+            }
+            if (!displayName) {
+                showLoveToast("Vui lòng điền tên hiển thị siêu ngọt ngào!");
+                return;
+            }
+            if (password.length < 6) {
+                showLoveToast("Mật khẩu tối thiểu cần 6 ký tự để bảo vệ tình yêu!");
+                return;
+            }
+
+            const username = rawUsername.replace(/[^a-z0-9_]/g, ''); // safe username slug
+
+            try {
+                // RULE 2: Fetch user list securely to verify uniqueness in memory
+                const allUsersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+                let exists = false;
+                allUsersSnap.forEach(uDoc => {
+                    if (uDoc.data().username === username) exists = true;
+                });
+
+                if (exists) {
+                    showLoveToast("Biệt hiệu đã bị mây che mất (có người dùng rồi)! 🥺");
+                    return;
+                }
+
+                // Register authentic account on Firebase Auth
+                const emailCredential = `${username}@lovers.app`;
+                const userCredential = await createUserWithEmailAndPassword(auth, emailCredential, password);
+                const user = userCredential.user;
+
+                // Write Profile document to cloud database
+                const newProfile = {
+                    uid: user.uid,
+                    username: username,
+                    displayName: displayName,
+                    coupleId: null,
+                    partnerUid: null
+                };
+
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', user.uid), newProfile);
+                currentUserProfile = newProfile;
+                
+                showLoveToast("Cấp Hộ Chiếu thành công! 🎉 Chào mừng bạn.");
+                document.getElementById("auth-screen").classList.add("hidden");
+                runMainCloudSync(user.uid);
+            } catch (err) {
+                console.error("Lỗi đăng ký:", err);
+                showLoveToast("Hệ thống mây bị nghẽn, thử lại sau ít phút nhé!");
+            }
+        };
+
+        // Login with username and password
+        window.loginWithCloud = async function() {
+            const rawUsername = document.getElementById("login-username").value.trim().toLowerCase();
+            const password = document.getElementById("login-password").value.trim();
+
+            if (!rawUsername || !password) {
+                showLoveToast("Vui lòng điền đầy đủ thông tin!");
+                return;
+            }
+
+            const username = rawUsername.replace(/[^a-z0-9_]/g, '');
+            const emailCredential = `${username}@lovers.app`;
+
+            try {
+                document.getElementById("loading-screen").classList.remove("hidden");
+                await signInWithEmailAndPassword(auth, emailCredential, password);
+            } catch (err) {
+                document.getElementById("loading-screen").classList.add("hidden");
+                console.error("Login failed", err);
+                showLoveToast("Biệt hiệu hoặc mật khẩu chưa đúng rồi bạn ơi! 🥺");
+            }
+        }
+
+        // Safe Cloud Log Out
+        window.logoutCloud = async function() {
+            try {
+                await signOut(auth);
+                // Clear active states
+                currentUserProfile = null;
+                currentCoupleDoc = null;
+                diaryEntries = [];
+                secretEntries = [];
+                bucketList = [];
+                unlockedSecretIds = [];
+                showLoveToast("Đã bước ra khỏi lâu đài mây xanh! Hẹn gặp lại. ☁️");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Main Cloud Sync Orchestrator
+        function runMainCloudSync(uid) {
+            // 1. Listen to Current User profile changes
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'users', uid), (profileDoc) => {
+                if (profileDoc.exists()) {
+                    currentUserProfile = profileDoc.data();
+                    document.getElementById("my-badge-username").textContent = `@${currentUserProfile.username}`;
+                    
+                    if (currentUserProfile.coupleId) {
+                        // User is in a couple! Deactivate match mode, open App Content
+                        document.getElementById("matching-screen").classList.add("hidden");
+                        document.getElementById("app-content").classList.remove("hidden");
+                        
+                        // Author presets
+                        document.getElementById("diary-author").value = currentUserProfile.displayName;
+                        document.getElementById("secret-author").value = currentUserProfile.displayName;
+
+                        syncCoupleSharedData(currentUserProfile.coupleId);
+                    } else {
+                        // Single status. Show Matching Sảnh
+                        document.getElementById("app-content").classList.add("hidden");
+                        document.getElementById("matching-screen").classList.remove("hidden");
+                        syncMatchmakingHallData();
+                    }
+                }
+            }, (err) => {
+                console.error("User sync error", err);
+            });
+        }
+
+        // Search Partner by `@username`
+        window.searchPartnerCloud = async function() {
+            const searchVal = document.getElementById("search-username-input").value.trim().toLowerCase();
+            if (!searchVal) return;
+
+            try {
+                const usersSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'users'));
+                let foundUser = null;
+                usersSnap.forEach(uDoc => {
+                    const ud = uDoc.data();
+                    if (ud.username === searchVal && ud.uid !== auth.currentUser.uid) {
+                        foundUser = ud;
+                    }
+                });
+
+                if (foundUser) {
+                    document.getElementById("found-display-name").textContent = foundUser.displayName;
+                    document.getElementById("found-username").textContent = `@${foundUser.username}`;
+                    document.getElementById("found-username").dataset.uid = foundUser.uid;
+                    document.getElementById("search-results-area").classList.remove("hidden");
+                } else {
+                    showLoveToast("Không tìm thấy ai có biệt danh này cả... 🥺");
+                    document.getElementById("search-results-area").classList.add("hidden");
+                }
+            } catch (err) {
+                console.error("Lỗi tìm kiếm", err);
+            }
+        };
+
+        // Send Love Match Request
+        window.sendLoveRequestCloud = async function() {
+            const targetUid = document.getElementById("found-username").dataset.uid;
+            const targetUsername = document.getElementById("found-username").textContent.replace('@', '');
+            const targetDisplayName = document.getElementById("found-display-name").textContent;
+
+            try {
+                // Add document to public collection coupleRequests (Strict Path Rule 1)
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), {
+                    fromUid: auth.currentUser.uid,
+                    fromUsername: currentUserProfile.username,
+                    fromDisplayName: currentUserProfile.displayName,
+                    toUid: targetUid,
+                    toUsername: targetUsername,
+                    status: 'pending'
+                });
+
+                showLoveToast(`Lời tỏ tình đã gửi tới ${targetDisplayName}! 💖`);
+                document.getElementById("search-results-area").classList.add("hidden");
+                document.getElementById("search-username-input").value = "";
+            } catch (err) {
+                console.error("Gửi yêu cầu thất bại", err);
+            }
+        };
+
+        // Sync Matchmaking requests real-time
+        function syncMatchmakingHallData() {
+            // Listen to all requests, filter in client side memory safely (RULE 2 compliance)
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'coupleRequests'), (requestsSnap) => {
+                let sentMatch = null;
+                let receivedMatch = null;
+
+                requestsSnap.forEach(rDoc => {
+                    const rData = rDoc.data();
+                    rData.id = rDoc.id;
+
+                    if (rData.status === 'pending') {
+                        if (rData.fromUid === auth.currentUser.uid) {
+                            sentMatch = rData;
+                        }
+                        if (rData.toUid === auth.currentUser.uid) {
+                            receivedMatch = rData;
+                        }
+                    }
+                });
+
+                // Render Sent request status
+                const sentArea = document.getElementById("sent-requests-area");
+                if (sentMatch) {
+                    document.getElementById("sent-request-partner").textContent = `@${sentMatch.toUsername}`;
+                    sentArea.classList.remove("hidden");
+                } else {
+                    sentArea.classList.add("hidden");
+                }
+
+                // Render Incoming request status
+                const incomingArea = document.getElementById("incoming-requests-area");
+                if (receivedMatch) {
+                    document.getElementById("incoming-sender-name").textContent = `${receivedMatch.fromDisplayName} (@${receivedMatch.fromUsername})`;
+                    incomingArea.dataset.reqId = receivedMatch.id;
+                    incomingArea.dataset.fromUid = receivedMatch.fromUid;
+                    incomingArea.dataset.fromUsername = receivedMatch.fromUsername;
+                    incomingArea.dataset.fromDisplayName = receivedMatch.fromDisplayName;
+                    incomingArea.classList.remove("hidden");
+                } else {
+                    incomingArea.classList.add("hidden");
+                }
+            }, (err) => {
+                console.error("Match sync error", err);
+            });
+        }
+
+        // Accept or Reject Request
+        window.respondLoveRequestCloud = async function(isAccepted) {
+            const incomingArea = document.getElementById("incoming-requests-area");
+            const reqId = incomingArea.dataset.reqId;
+            const partnerUid = incomingArea.dataset.fromUid;
+            const partnerUsername = incomingArea.dataset.fromUsername;
+            const partnerDisplayName = incomingArea.dataset.fromDisplayName;
+
+            try {
+                if (isAccepted) {
+                    const coupleId = `couple_${partnerUid}_${auth.currentUser.uid}`;
+
+                    // 1. Create Couple Document
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), {
+                        coupleId: coupleId,
+                        partner1Uid: partnerUid,
+                        partner1Username: partnerUsername,
+                        partner1DisplayName: partnerDisplayName,
+                        partner2Uid: auth.currentUser.uid,
+                        partner2Username: currentUserProfile.username,
+                        partner2DisplayName: currentUserProfile.displayName,
+                        anniversaryDate: "2026-01-01"
+                    });
+
+                    // 2. Update user profiles to point to Couple
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', auth.currentUser.uid), {
+                        coupleId: coupleId,
+                        partnerUid: partnerUid
+                    });
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', partnerUid), {
+                        coupleId: coupleId,
+                        partnerUid: auth.currentUser.uid
+                    });
+
+                    // 3. Update Request document
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId), {
+                        status: 'accepted'
+                    });
+
+                    showLoveToast("Đúm đúm đúm! Chào mừng Couple mới ra đời! 💕🏰");
+                } else {
+                    // Rejected: Delete proposal
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'coupleRequests', reqId));
+                    showLoveToast("Tín hiệu đã tan biến vào mây khói... 🍃");
+                }
+            } catch (err) {
+                console.error("Lỗi kết đôi", err);
+            }
+        };
+
+        // Sync diary entries, secrets and wishlist belonging to Couple Spaces
+        function syncCoupleSharedData(coupleId) {
+            // Listen to Couple Info Document
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'couples', coupleId), (cDoc) => {
+                if (cDoc.exists()) {
+                    currentCoupleDoc = cDoc.data();
+                    anniversaryDate = currentCoupleDoc.anniversaryDate;
+                    document.getElementById("anniversary-input").value = anniversaryDate;
+
+                    // Header UI adjustments
+                    document.getElementById("partner1-name-display").textContent = currentCoupleDoc.partner1DisplayName;
+                    document.getElementById("partner2-name-display").textContent = currentCoupleDoc.partner2DisplayName;
+                    document.getElementById("couple-title").textContent = `${currentCoupleDoc.partner1DisplayName} ☁️ ${currentCoupleDoc.partner2DisplayName}`;
+                }
+            }, (err) => console.error("Couple Sync Error", err));
+
+            // Sync Diary Timeline with Client-Side Filter (RULE 2 Compliance)
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), (snapshot) => {
+                const entries = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.coupleId === coupleId) {
+                        data.id = docSnap.id;
+                        entries.push(data);
+                    }
+                });
+                // Sort by date or id descending
+                diaryEntries = entries.sort((a,b) => b.id - a.id);
+                renderTimeline();
+            }, (err) => console.error("Diary sync error", err));
+
+            // Sync Secrets List with Client-Side Filter
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), (snapshot) => {
+                const secrets = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.coupleId === coupleId) {
+                        data.id = docSnap.id;
+                        secrets.push(data);
+                    }
+                });
+                secretEntries = secrets.sort((a,b) => b.id - a.id);
+                renderSecrets();
+            }, (err) => console.error("Secrets sync error", err));
+
+            // Sync Bucket list with Client-Side Filter
+            onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), (snapshot) => {
+                const list = [];
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.coupleId === coupleId) {
+                        data.id = docSnap.id;
+                        list.push(data);
+                    }
+                });
+                bucketList = list;
+                renderBucketList();
+            }, (err) => console.error("Bucketlist sync error", err));
+        }
+
+        // Global initialization
+        window.onload = function() {
+            createCloudsBackground();
+            // Start Authentication Check
+            runCloudAuth();
+
+            // Interval for Live Love Clock
+            setInterval(updateLoveCounter, 1000);
+        };
+
+        // Custom love-themed Notification Toast
+        function showLoveToast(msg) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toast-message").textContent = msg;
+            toast.classList.remove("translate-y-[-100px]", "opacity-0");
+            toast.classList.add("translate-y-0", "opacity-100");
+            
+            setTimeout(() => {
+                toast.classList.add("translate-y-[-100px]", "opacity-0");
+                toast.classList.remove("translate-y-0", "opacity-100");
+            }, 3000);
+        }
+
+        // Switch custom tabs
+        window.switchTab = function(tabId) {
+            activeTabId = tabId;
+            // Hide all sections
+            document.getElementById("sec-diary").classList.add("hidden");
+            document.getElementById("sec-secrets").classList.add("hidden");
+            document.getElementById("sec-bucket").classList.add("hidden");
+
+            // Show active section
+            if (tabId === 'diary') document.getElementById("sec-diary").classList.remove("hidden");
+            if (tabId === 'secrets') document.getElementById("sec-secrets").classList.remove("hidden");
+            if (tabId === 'bucket') document.getElementById("sec-bucket").classList.remove("hidden");
+
+            // Manage desktop buttons style
+            document.querySelectorAll("aside nav button").forEach(btn => btn.classList.remove("active-tab"));
+            document.getElementById(`d-btn-${tabId}`).classList.add("active-tab");
+
+            // Manage mobile buttons style
+            document.querySelectorAll("nav.md\\:hidden button").forEach(btn => {
+                btn.classList.remove("text-sky-500", "active-tab");
+                btn.classList.add("text-slate-500");
+            });
+            const mobileBtn = document.getElementById(`m-btn-${tabId}`);
+            mobileBtn.classList.remove("text-slate-500");
+            mobileBtn.classList.add("text-sky-500", "active-tab");
+
+            window.scrollTo(0, 0);
+        }
+
+        // Live Clock ticking calculation
+        function updateLoveCounter() {
+            if (!anniversaryDate) return;
+            const startDate = new Date(anniversaryDate + "T00:00:00");
+            const now = new Date();
+            const difference = now - startDate;
+
+            if (difference < 0) {
+                document.getElementById("counter-days").textContent = "Sắp yêu nhau rồi!";
+                document.getElementById("counter-hours").textContent = "00";
+                document.getElementById("counter-minutes").textContent = "00";
+                document.getElementById("counter-seconds").textContent = "00";
+                return;
+            }
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((difference / 1000 / 60) % 60);
+            const seconds = Math.floor((difference / 1000) % 60);
+
+            document.getElementById("counter-days").textContent = `${days} ngày`;
+            document.getElementById("counter-hours").textContent = hours < 10 ? '0' + hours : hours;
+            document.getElementById("counter-minutes").textContent = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById("counter-seconds").textContent = seconds < 10 ? '0' + seconds : seconds;
+        }
+
+        // Update customized anniversary start date on cloud
+        window.updateAnniversary = async function() {
+            const inputVal = document.getElementById("anniversary-input").value;
+            if (inputVal && currentUserProfile.coupleId) {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'couples', currentUserProfile.coupleId), {
+                        anniversaryDate: inputVal
+                    });
+                    showLoveToast("Mốc thời gian kỷ niệm đã đồng bộ lên mây! 🌤️");
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        // Preview images attached to memory entries & encode to Base64
+        window.previewImage = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    attachedImageBase64 = e.target.result;
+                    document.getElementById("image-preview").src = attachedImageBase64;
+                    document.getElementById("image-preview-container").classList.remove("hidden");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.clearImagePreview = function() {
+            attachedImageBase64 = "";
+            document.getElementById("diary-image-picker").value = "";
+            document.getElementById("image-preview-container").classList.add("hidden");
+        }
+
+        // Write new diary cards
+        window.saveNewEntry = async function(event) {
+            event.preventDefault();
+            if (!currentUserProfile.coupleId) return;
+
+            const mood = document.getElementById("diary-mood").value;
+            const title = document.getElementById("diary-title").value.trim();
+            const content = document.getElementById("diary-content").value.trim();
+            const today = new Date().toISOString().split('T')[0];
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'diary'), {
+                    coupleId: currentUserProfile.coupleId,
+                    id: Date.now(), // Unique timeline key
+                    author: currentUserProfile.displayName,
+                    date: today,
+                    mood: mood,
+                    title: title,
+                    content: content,
+                    image: attachedImageBase64
+                });
+
+                // Reset forms
+                document.getElementById("diary-title").value = "";
+                document.getElementById("diary-content").value = "";
+                clearImagePreview();
+                showLoveToast("Nhật ký đã gửi trọn lên mây trời bình yên! 💌");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Delete memory card from timeline
+        window.deleteEntry = async function(docId) {
+            if (confirm("Hai bạn có chắc chắn muốn xóa kỷ niệm này không? 🥺")) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'diary', docId));
+                    showLoveToast("Đã xóa vĩnh viễn một trang nhật ký cũ.");
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        // Write new locked secret entry
+        window.saveNewSecret = async function(event) {
+            event.preventDefault();
+            if (!currentUserProfile.coupleId) return;
+
+            const password = document.getElementById("secret-password").value.trim();
+            const title = document.getElementById("secret-title").value.trim();
+            const content = document.getElementById("secret-content").value.trim();
+            const today = new Date().toISOString().split('T')[0];
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'secrets'), {
+                    coupleId: currentUserProfile.coupleId,
+                    id: Date.now(),
+                    author: currentUserProfile.displayName,
+                    date: today,
+                    title: title,
+                    content: content,
+                    password: password
+                });
+
+                // Reset form input values
+                document.getElementById("secret-password").value = "";
+                document.getElementById("secret-title").value = "";
+                document.getElementById("secret-content").value = "";
+
+                showLoveToast("Bí mật đã được gửi trọn vào rương mây bảo mật! 🔒✨");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Handle secret password confirmation
+        window.checkSecretPassword = function(id, inputElementId) {
+            const entered = document.getElementById(inputElementId).value.trim();
+            const secret = secretEntries.find(s => s.id === id);
+            
+            if (secret && secret.password === entered) {
+                unlockedSecretIds.push(id);
+                renderSecrets();
+                showLoveToast("Mật mã chuẩn xác! Khóa lòng đã mở... 🔓💕");
+            } else {
+                showLoveToast("Mật mã không đúng rồi, thử đoán lại xem sao nha 🥺");
+                document.getElementById(inputElementId).value = "";
+            }
+        }
+
+        // Toggle custom delete validation panel for secrets
+        window.toggleDeleteSecretConfirm = function(id) {
+            confirmDeleteSecretId = id;
+            renderSecrets();
+        }
+
+        // Complete deletion of the secret card
+        window.deleteSecret = async function(docId) {
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'secrets', docId));
+                confirmDeleteSecretId = null;
+                showLoveToast("Bí mật đã được xóa sạch hoàn toàn khỏi rương mây.");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Render locked secrets cards dynamic UI
+        function renderSecrets() {
+            const container = document.getElementById("secrets-timeline");
+            container.innerHTML = "";
+
+            if (secretEntries.length === 0) {
+                container.innerHTML = `
+                    <div class="love-card p-8 text-center text-slate-400">
+                        <span class="text-4xl block mb-2">🎈</span>
+                        Không có bí mật nào chờ bật mí. Hãy viết một điều ngọt ngào đầu tiên!
+                    </div>
+                `;
+                return;
+            }
+
+            secretEntries.forEach(secret => {
+                const isUnlocked = unlockedSecretIds.includes(secret.id);
+                const formattedDate = new Date(secret.date).toLocaleDateString('vi-VN', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const secretCard = document.createElement("div");
+                secretCard.className = "love-card p-6 md:p-8 space-y-4 relative group transition-all duration-300";
+
+                const isMySecret = (secret.author === currentUserProfile.displayName);
+                const authorColorClass = isMySecret 
+                    ? "bg-blue-100 text-blue-700" 
+                    : "bg-sky-100 text-[#0369A1]";
+
+                let contentHtml = "";
+                if (isUnlocked || isMySecret) {
+                    contentHtml = `
+                        <div class="bg-sky-50/50 p-4 rounded-2xl border border-sky-100 mt-2">
+                            <span class="text-xs font-bold text-sky-500 block mb-1">💌 Lời thì thầm hé mở:</span>
+                            <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-line">${secret.content}</p>
+                        </div>
+                    `;
+                } else {
+                    const inputId = `pass-input-${secret.id}`;
+                    contentHtml = `
+                        <div class="bg-slate-50/50 p-6 rounded-2xl border border-dashed border-sky-200 flex flex-col items-center justify-center text-center space-y-3">
+                            <span class="text-3xl animate-pulse">🔒</span>
+                            <div class="text-xs text-slate-500">Tin nhắn mật này của ${secret.author} đang được khóa chặt</div>
+                            <div class="flex gap-2 max-w-xs w-full mt-1">
+                                <input type="password" id="${inputId}" placeholder="Nhập mã giải khóa..." 
+                                    class="flex-1 px-3 py-2 border border-sky-200 rounded-xl text-xs text-center focus:outline-none focus:border-sky-400 bg-white">
+                                <button onclick="checkSecretPassword(${secret.id}, '${inputId}')"
+                                    class="bg-[#0369A1] hover:bg-[#025684] text-white px-4 py-2 rounded-xl text-xs font-bold transition">
+                                    Giải Mã 🗝️
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Delete system block with inline confirm (avoiding native dialogs)
+                let deleteBlockHtml = "";
+                if (confirmDeleteSecretId === secret.id) {
+                    deleteBlockHtml = `
+                        <div class="absolute top-4 right-4 bg-white/95 border border-red-200 p-2 rounded-xl flex items-center gap-2 shadow-lg z-10">
+                            <span class="text-[10px] font-bold text-red-500">Xóa vĩnh viễn?</span>
+                            <button onclick="deleteSecret('${secret.id}')" class="text-[9px] font-bold text-white bg-red-500 px-2.5 py-1 rounded-lg">Xóa</button>
+                            <button onclick="toggleDeleteSecretConfirm(null)" class="text-[9px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">Hủy</button>
+                        </div>
+                    `;
+                } else {
+                    deleteBlockHtml = `
+                        <button onclick="toggleDeleteSecretConfirm(${secret.id})"
+                            class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
+                            Xóa 🗑️
+                        </button>
+                    `;
+                }
+
+                secretCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-sky-100/60">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-3 py-1 font-bold rounded-full ${authorColorClass}">${secret.author} gửi đối phương</span>
+                            <span class="text-xs px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium">
+                                ${isUnlocked || isMySecret ? "🔓 Đã mở" : "🔒 Đang khóa"}
+                            </span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-semibold">${formattedDate}</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="romantic-font text-xl font-bold text-[#0369A1]">${secret.title}</h4>
+                        ${contentHtml}
+                    </div>
+
+                    ${deleteBlockHtml}
+                `;
+                container.appendChild(secretCard);
+            });
+        }
+
+        // Dynamic rendering timeline UI
+        function renderTimeline() {
+            const timeline = document.getElementById("timeline");
+            timeline.innerHTML = "";
+
+            if (diaryEntries.length === 0) {
+                timeline.innerHTML = `
+                    <div class="love-card p-8 text-center text-slate-400">
+                        <span class="text-4xl block mb-2">🍃</span>
+                        Chưa có kỷ niệm nào được viết... Hãy cùng nhau viết trang nhật ký đầu tiên!
+                    </div>
+                `;
+                return;
+            }
+
+            diaryEntries.forEach(entry => {
+                const formattedDate = new Date(entry.date).toLocaleDateString('vi-VN', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+
+                const entryCard = document.createElement("div");
+                entryCard.className = "love-card p-6 md:p-8 space-y-4 relative group";
+                
+                // Author badge colors
+                const authorColorClass = entry.author === currentUserProfile.displayName
+                    ? "bg-blue-100 text-blue-700" 
+                    : "bg-sky-100 text-[#0369A1]";
+
+                let imageHtml = "";
+                if (entry.image) {
+                    imageHtml = `<div class="rounded-2xl overflow-hidden max-h-96 w-full border border-sky-100 mt-2">
+                        <img src="${entry.image}" class="w-full h-full object-cover">
+                    </div>`;
+                }
+
+                entryCard.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-sky-100/60">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs px-3 py-1 font-bold rounded-full ${authorColorClass}">${entry.author}</span>
+                            <span class="text-xs px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-medium">${entry.mood}</span>
+                        </div>
+                        <span class="text-xs text-slate-400 font-semibold">${formattedDate}</span>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="romantic-font text-xl font-bold text-[#0369A1]">${entry.title}</h4>
+                        <p class="text-sm leading-relaxed text-slate-600 whitespace-pre-line">${entry.content}</p>
+                        ${imageHtml}
+                    </div>
+
+                    <!-- Delete button visible on hover -->
+                    <button onclick="deleteEntry('${entry.id}')"
+                        class="absolute top-4 right-4 text-xs font-bold text-red-400 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-200">
+                        Xóa 🗑️
+                    </button>
+                `;
+                timeline.appendChild(entryCard);
+            });
+        }
+
+        // Wishlist handling (Bucket list)
+        window.addWishlistItem = async function(event) {
+            event.preventDefault();
+            if (!currentUserProfile.coupleId) return;
+
+            const input = document.getElementById("bucket-input");
+            const text = input.value.trim();
+
+            if (text) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'bucketList'), {
+                        coupleId: currentUserProfile.coupleId,
+                        text: text,
+                        completed: false
+                    });
+                    input.value = "";
+                    showLoveToast("Đã bổ sung một ước nguyện mới bay lên trời xanh! ✨");
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        window.toggleWishlist = async function(docId, currentCompleted) {
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId), {
+                    completed: !currentCompleted
+                });
+                showLoveToast("Ước nguyện ngọt ngào đã được hòa vào gió mây! 🌤️");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        window.deleteWishlistItem = async function(docId) {
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'bucketList', docId));
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // Render bucket progress bar and wishlist items list
+        function renderBucketList() {
+            const container = document.getElementById("bucket-list");
+            container.innerHTML = "";
+
+            if (bucketList.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">Chưa có mong muốn nào. Hãy thêm vài điều lãng mạn muốn làm cùng nhau!</p>`;
+                updateBucketProgress(0);
+                return;
+            }
+
+            let completedCount = 0;
+            bucketList.forEach(item => {
+                if (item.completed) completedCount++;
+
+                const row = document.createElement("div");
+                row.className = "flex items-center justify-between p-4 bg-white/40 border border-sky-100/60 rounded-2xl hover:bg-white/60 transition";
+                
+                const checkedClass = item.completed ? "line-through text-slate-400" : "text-slate-700 font-semibold";
+                const iconCheck = item.completed ? "✨" : "☁️";
+
+                row.innerHTML = `
+                    <div class="flex items-center gap-3 cursor-pointer" onclick="toggleWishlist('${item.id}', ${item.completed})">
+                        <span class="text-lg">${iconCheck}</span>
+                        <span class="text-sm ${checkedClass}">${item.text}</span>
+                    </div>
+                    <button onclick="deleteWishlistItem('${item.id}')" class="text-xs text-sky-400 hover:text-sky-600 px-2 py-1">Xóa</button>
+                `;
+                container.appendChild(row);
+            });
+
+            // Calculate progress percentage
+            const percentage = Math.round((completedCount / bucketList.length) * 100);
+            updateBucketProgress(percentage);
+        }
+
+        function updateBucketProgress(percentage) {
+            document.getElementById("bucket-progress-text").textContent = `${percentage}%`;
+            document.getElementById("bucket-progress-bar").style.width = `${percentage}%`;
+        }
+
+        // Floating clouds animations creator
+        function createCloudsBackground() {
+            const container = document.getElementById("clouds-container");
+            const cloudSymbols = ["☁️", "☁️", "🌤️", "✨", "⭐", "💨"];
+            
+            // Generate initial clouds spread across the viewport
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const cloud = document.createElement("div");
+                    cloud.className = "cloud-bubble";
+                    cloud.textContent = cloudSymbols[Math.floor(Math.random() * cloudSymbols.length)];
+                    cloud.style.left = (Math.random() * 120 - 20) + "vw";
+                    cloud.style.top = Math.random() * 85 + "vh";
+                    cloud.style.fontSize = Math.random() * 2 + 1.5 + "rem";
+                    cloud.style.animationDuration = Math.random() * 15 + 20 + "s";
+                    cloud.style.animationDelay = Math.random() * 3 + "s";
+                    container.appendChild(cloud);
+
+                    // Re-instantiate when animation ends
+                    cloud.addEventListener("animationend", () => {
+                        cloud.remove();
+                        createSingleCloud();
+                    });
+                }, i * 1200);
+            }
+        }
+
+        function createSingleCloud() {
+            const container = document.getElementById("clouds-container");
+            if (!container) return;
+            const cloudSymbols = ["☁️", "☁️", "🌤️", "✨", "⭐", "💨"];
+            const cloud = document.createElement("div");
+            cloud.className = "cloud-bubble";
+            cloud.textContent = cloudSymbols[Math.floor(Math.random() * cloudSymbols.length)];
+            cloud.style.left = "-20vw";
+            cloud.style.top = Math.random() * 85 + "vh";
+            cloud.style.fontSize = Math.random() * 2 + 1.5 + "rem";
+            cloud.style.animationDuration = Math.random() * 15 + 20 + "s";
+            container.appendChild(cloud);
+
+            cloud.addEventListener("animationend", () => {
+                cloud.remove();
+                createSingleCloud();
+            });
+        }
+    </script>
+</body>
+</html>
